@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pendidikan Kharakter SDI</title>
+    <link rel="manifest" href="/pendidikan/manifest.json">
+    <meta name="theme-color" content="#198754">
+    <link rel="apple-touch-icon" href="/pendidikan/hidis.png">
+
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%;
+            overflow: hidden; 
+            background-color: #f0fdf4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        iframe { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            z-index: 10;
+        }
+
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            color: #198754;
+        }
+        .logo { width: 80px; height: 80px; margin-bottom: 15px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <div id="pwa-install-banner" style="display:none; position:fixed; bottom:20px; left:20px; right:20px; background:#fff; padding:15px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.2); z-index:9999; border-left:5px solid #198754;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center;">
+                <img src="hidis.png" width="40" height="40" style="border-radius:10px; margin-right:12px;">
+                <div>
+                    <b style="color:#198754; font-size:14px;">Pasang Aplikasi</b><br>
+                    <small style="color:#666;">Akses lebih cepat & mudah!</small>
+                </div>
+            </div>
+            <button id="btn-install-pwa" style="background:#198754; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">Instal</button>
+        </div>
+    </div>
+
+    <div class="loading-screen">
+        <img src="hidis.png" alt="Logo" class="logo">
+        <h4>Memuat Aplikasi...</h4>
+    </div>
+
+    <iframe src="https://script.google.com/a/macros/hidis.id/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"></iframe>
+
+    <script>
+    let deferredPrompt;
+    const banner = document.getElementById('pwa-install-banner');
+    const btn = document.getElementById('btn-install-pwa');
+
+    // Tangkap pemicu instalasi
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Munculkan banner dengan sedikit jeda agar halus
+        setTimeout(() => {
+            banner.style.display = 'block';
+        }, 3000); 
+    });
+
+    btn.addEventListener('click', () => {
+        if (!deferredPrompt) return;
+        banner.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+            deferredPrompt = null;
+        });
+    });
+
+    // Registrasi SW
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js?v=2') // Paksa update dengan query v=2
+          .then(reg => {
+             console.log("SW Terdaftar");
+             // Paksa update jika ada perubahan sw.js
+             reg.update();
+          });
+    }
+</script>
+</body>
+</html>

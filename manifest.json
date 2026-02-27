@@ -1,0 +1,21 @@
+{
+  "name": "Pendidikan Kharakter SDI",
+  "short_name": "Sispek",
+  "description": "Aplikasi Pendidikan Kharakter",
+  "start_url": "/pendidikan/index.html",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#198754",
+  "icons": [
+    {
+      "src": "/pendidikan/hidis.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pendidikan/hidis.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
