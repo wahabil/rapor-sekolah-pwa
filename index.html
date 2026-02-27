@@ -1,102 +1,528 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
+<html>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pendidikan Kharakter SDI</title>
-    <link rel="manifest" href="/pendidikan/manifest.json">
-    <meta name="theme-color" content="#198754">
-    <link rel="apple-touch-icon" href="/pendidikan/hidis.png">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapor Karakter PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            height: 100%; 
-            width: 100%;
-            overflow: hidden; 
-            background-color: #f0fdf4;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        iframe { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            z-index: 10;
-        }
+      /* --- VARIABEL & RESET --- */
+      body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; margin-top: 20px; background-color: #f4f7f6; color: #333; transition: background-color 0.3s, color 0.3s; }
+      
+      /* --- GAYA TEMA TERANG (DEFAULT) --- */
+      .kop-sekolah, .container { max-width: 450px; width: 90%; margin: 0 auto 20px auto; box-sizing: border-box; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: background-color 0.3s, box-shadow 0.3s; }
 
-        .loading-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-            color: #198754;
-        }
-        .logo { width: 80px; height: 80px; margin-bottom: 15px; border-radius: 50%; }
+      .kop-sekolah { padding: 20px 15px; border-top: 5px solid #4CAF50; display: flex; align-items: center; justify-content: center; gap: 15px; }
+      .kop-logo { width: 75px; height: auto; }
+      .kop-teks { flex: 1; text-align: center; }
+      .kop-yayasan { font-size: 11px; font-weight: bold; color: #777; letter-spacing: 1.5px; margin: 0; }
+      .kop-nama { font-size: 18px; font-weight: bold; color: #2c3e50; margin: 5px 0; line-height: 1.2; }
+      .kop-alamat { font-size: 11px; color: #666; margin: 5px 0 2px 0; }
+      .kop-kontak { font-size: 11px; color: #0066cc; margin: 0; }
+      .kop-kontak a { color: #0066cc; text-decoration: none; }
+      .kop-kontak a:hover { text-decoration: underline; }
+
+      .container { padding: 20px; }
+      
+      input, select, button { width: 95%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; transition: background-color 0.3s, color 0.3s; }
+      button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; transition: background-color 0.3s; }
+      button:hover { background-color: #45a049; }
+      .btn-secondary { background-color: #9C27B0; }
+      .btn-secondary:hover { background-color: #7b1fa2; }
+      .btn-pdf { background-color: #E91E63; } 
+      .btn-pdf:hover { background-color: #C2185B; }
+      
+      .hidden { display: none; }
+      hr { border: 0; height: 1px; background: #eee; margin: 20px 0; transition: background-color 0.3s; }
+      
+      .greeting-box { background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+      .greeting-box h2 { margin: 0 0 5px 0; color: white; font-size: 20px; }
+      .greeting-box p { margin: 0; color: #e8f5e9; font-size: 13px; }
+
+      .leaderboard-box { background: white; padding: 15px; border-radius: 8px; border: 2px solid #FFC107; margin-bottom: 20px; text-align: left; transition: background-color 0.3s; }
+      .leaderboard-title { color: #F57C00; font-size: 16px; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+      .peringkat-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd; font-size: 13px; }
+      .peringkat-item:last-child { border-bottom: none; }
+      .juara-1 { font-weight: bold; color: #d4af37; font-size: 14px; } 
+      .juara-2 { font-weight: bold; color: #9e9e9e; } 
+      .juara-3 { font-weight: bold; color: #cd7f32; } 
+
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; text-align: left; }
+      th, td { border: 1px solid #ddd; padding: 8px; }
+      th { background-color: #4CAF50; color: white; }
+
+      .wrap-tombol-tema { max-width: 450px; width: 90%; margin: 0 auto 10px auto; text-align: right; }
+      .btn-tema { width: auto; padding: 8px 15px; font-size: 12px; border-radius: 20px; background-color: #333; color: white; margin: 0; }
+
+      /* --- GAYA TEMA GELAP (DARK MODE) --- */
+      body.dark-mode { background-color: #121212; color: #e0e0e0; }
+      body.dark-mode .kop-sekolah, body.dark-mode .container { background-color: #1e1e1e; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-top-color: #388E3C; }
+      body.dark-mode .kop-yayasan, body.dark-mode .kop-alamat { color: #aaa; }
+      body.dark-mode .kop-nama { color: #81c784; } 
+      body.dark-mode .kop-kontak a { color: #64b5f6; }
+      body.dark-mode input, body.dark-mode select { background-color: #333; color: #fff; border: 1px solid #555; }
+      body.dark-mode input[readonly] { background-color: #2a2a2a !important; color: #888; }
+      body.dark-mode hr { background-color: #444; }
+      body.dark-mode td { border-color: #444; }
+      body.dark-mode th { background-color: #2e7d32; border-color: #444; }
+      body.dark-mode .btn-tema { background-color: #f4f7f6; color: #333; }
+      body.dark-mode .greeting-box { background-color: #2e7d32; } 
+      body.dark-mode .leaderboard-box { background-color: #262626; border-color: #F57C00; }
+      body.dark-mode .peringkat-item { border-bottom-color: #444; }
     </style>
-</head>
-<body>
+  </head>
+  <body>
 
-    <div id="pwa-install-banner" style="display:none; position:fixed; bottom:20px; left:20px; right:20px; background:#fff; padding:15px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.2); z-index:9999; border-left:5px solid #198754;">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-            <div style="display:flex; align-items:center;">
-                <img src="hidis.png" width="40" height="40" style="border-radius:10px; margin-right:12px;">
-                <div>
-                    <b style="color:#198754; font-size:14px;">Pasang Aplikasi</b><br>
-                    <small style="color:#666;">Akses lebih cepat & mudah!</small>
-                </div>
-            </div>
-            <button id="btn-install-pwa" style="background:#198754; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">Instal</button>
+    <div class="wrap-tombol-tema">
+      <button class="btn-tema" id="btnTema" onclick="toggleTema()">🌙 Mode Gelap</button>
+    </div>
+
+    <div class="kop-sekolah">
+      <img src="https://url.hidis.id/logo/hidis.png" alt="Logo Sekolah" class="kop-logo">
+      <div class="kop-teks">
+        <p class="kop-yayasan">YAYASAN NURUL IHSAN</p>
+        <h1 class="kop-nama">SD ISLAM HIDAYATUL<br>ISLAMIYAH</h1>
+        <p class="kop-alamat">Jl. Sapi Perah Rt 003/02, Pondok Ranggon, Kec. Cipayung, Kota Jakarta Timur Prov. D.K.I. Jakarta</p>
+        <p class="kop-kontak">
+          Email : <a href="mailto:sekolah@sdihidayatulislamiyah.sch.id">sekolah@sdihidayatulislamiyah.sch.id</a><br>
+          <a href="http://www.sdihidayatulislamiyah.sch.id" target="_blank">www.sdihidayatulislamiyah.sch.id</a>
+        </p>
+      </div>
+    </div>
+
+    <div id="loginPage" class="container">
+      <h2 style="margin-top: 0;">Login Aplikasi</h2>
+      <input type="text" id="username" placeholder="Masukkan Username (NIS/NIP/W-NIS)">
+      <input type="password" id="password" placeholder="Masukkan Password">
+      <button onclick="prosesLogin()">Masuk</button>
+      <p id="pesan" style="color: #ff5252; font-size: 14px;"></p>
+    </div>
+
+    <div id="dashboardPage" class="container hidden">
+      
+      <div class="greeting-box">
+        <h2 id="judulRole">Selamat Datang!</h2>
+        <p>Semoga harimu menyenangkan. Ini adalah halaman dasbor Anda.</p>
+      </div>
+
+      <div id="leaderboardBox" class="leaderboard-box hidden">
+        <h3 class="leaderboard-title">🏆 Top 5 Karakter Terbaik</h3>
+        <div id="listLeaderboard">
+          <p style="font-size: 12px; color: #888;">Memuat data peringkat...</p>
         </div>
-    </div>
+      </div>
+      
+      <div id="menuGuru" class="hidden">
+        <h3 style="color: #4CAF50; margin-top: 0;">Menu Guru</h3>
+        <input list="listSiswa" id="inputPencarianSiswa" placeholder="1. Cari & Pilih Siswa (NIS/Nama)..." onchange="autoIsiKelas()">
+        <datalist id="listSiswa"></datalist>
+        <input type="text" id="inputKelas" placeholder="Kelas (Otomatis Terisi)" readonly style="background-color: #e9e9e9; cursor: not-allowed;">
+        <button onclick="lihatRaporGuru()" class="btn-secondary">Lihat Grafik & Rapor Siswa Ini</button>
+        <hr>
+        <h4 style="margin: 10px 0;">Atau Input Nilai Baru:</h4>
+        <select id="inputKarakter">
+          <option value="">-- Pilih Karakter --</option>
+          <option value="Kedisiplinan">Kedisiplinan</option>
+          <option value="Kejujuran">Kejujuran</option>
+          <option value="Tanggung Jawab">Tanggung Jawab</option>
+          <option value="Sopan Santun">Sopan Santun</option>
+        </select>
+        <select id="inputNilai">
+          <option value="">-- Pilih Predikat --</option>
+          <option value="Sangat Baik">Sangat Baik</option>
+          <option value="Baik">Baik</option>
+          <option value="Cukup">Cukup</option>
+          <option value="Perlu Bimbingan">Perlu Bimbingan</option>
+        </select>
+        <button onclick="simpanNilai()" style="background-color: #2196F3;">Simpan Nilai</button>
+        <p id="pesanGuru" style="font-weight: bold; font-size: 14px;"></p>
+      </div>
 
-    <div class="loading-screen">
-        <img src="hidis.png" alt="Logo" class="logo">
-        <h4>Memuat Aplikasi...</h4>
-    </div>
+      <div id="menuSiswaWali" class="hidden">
+        <button onclick="lihatRaporSiswaWali()" style="background-color: #FF9800;">Lihat Rapor Karakter & Grafik</button>
+      </div>
 
-    <iframe src="https://script.google.com/a/macros/hidis.id/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"></iframe>
+      <div id="areaRapor" class="hidden">
+        <hr>
+        
+        <div id="kontenRapor">
+          <h3 style="margin-top: 0;">📊 Grafik Perkembangan Karakter</h3>
+          <p id="pesanRapor" style="font-size: 13px; color: #2196F3; font-weight: bold;"></p>
+          <canvas id="grafikKarakter" width="400" height="250"></canvas>
+          <div id="tempatTabel" style="max-height: 200px; overflow-y: auto; margin-top: 15px;"></div>
+        </div>
+
+        <button id="btnDownloadPDF" onclick="downloadPDF()" class="btn-pdf">📄 Download Rapor (PDF)</button>
+      </div>
+      
+      <hr>
+      <button onclick="keluar()" style="background-color: #f44336;">Keluar</button>
+    </div>
 
     <script>
-    let deferredPrompt;
-    const banner = document.getElementById('pwa-install-banner');
-    const btn = document.getElementById('btn-install-pwa');
+      // =========================================================================
+      // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT KAMU!
+      // =========================================================================
+      const API_URL = "https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"; 
 
-    // Tangkap pemicu instalasi
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Munculkan banner dengan sedikit jeda agar halus
-        setTimeout(() => {
-            banner.style.display = 'block';
-        }, 3000); 
-    });
+      var dataSiswaGlobal = []; 
+      var dataLoginSekarang = {}; 
+      var grafikSaya = null; 
+      var namaSiswaSedangDilihat = ""; 
 
-    btn.addEventListener('click', () => {
-        if (!deferredPrompt) return;
-        banner.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-            deferredPrompt = null;
+      // FUNGSI JEMBATAN PENGHUBUNG VERCEL -> GOOGLE
+      function panggilAPI(payload, callbackSukses) {
+        fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(result => callbackSukses(result))
+        .catch(error => {
+          console.error('Error fetching API:', error);
+          alert('Gagal terhubung ke database. Pastikan internet aktif.');
         });
-    });
+      }
 
-    // Registrasi SW
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js?v=2') // Paksa update dengan query v=2
-          .then(reg => {
-             console.log("SW Terdaftar");
-             // Paksa update jika ada perubahan sw.js
-             reg.update();
-          });
-    }
-</script>
-</body>
+      function toggleTema() {
+        var body = document.body;
+        var btn = document.getElementById("btnTema");
+        body.classList.toggle("dark-mode");
+        if (body.classList.contains("dark-mode")) {
+          btn.innerText = "☀️ Mode Terang";
+          Chart.defaults.color = '#e0e0e0';
+        } else {
+          btn.innerText = "🌙 Mode Gelap";
+          Chart.defaults.color = '#666';
+        }
+        if (grafikSaya) grafikSaya.update();
+      }
+
+      function prosesLogin() {
+        var user = document.getElementById('username').value;
+        var pass = document.getElementById('password').value;
+        document.getElementById('pesan').innerText = "Mengecek data di server...";
+        
+        // Menggunakan fetch via panggilAPI
+        panggilAPI({ action: 'cekLogin', username: user, password: pass }, setelahLogin);
+      }
+
+      function setelahLogin(dataUser) {
+        if (dataUser.status === 'Gagal') {
+          document.getElementById('pesan').innerText = "Username atau Password salah!";
+        } else {
+          dataLoginSekarang = { username: document.getElementById('username').value.trim(), role: dataUser.role, kelas: dataUser.kelas, nama: dataUser.nama };
+
+          document.getElementById('loginPage').classList.add('hidden');
+          document.getElementById('dashboardPage').classList.remove('hidden');
+          
+          var sapaan = "Halo, " + dataUser.nama + " (" + dataUser.role + ")";
+          if (dataUser.kelas !== "" && dataUser.role !== "Guru") sapaan += " - Kelas " + dataUser.kelas;
+          document.getElementById('judulRole').innerText = sapaan;
+          
+          document.getElementById('leaderboardBox').classList.remove('hidden');
+          
+          // Meminta data leaderboard via API
+          panggilAPI({ action: 'getLeaderboard' }, function(res) { tampilkanLeaderboard(res.data); });
+
+          if(dataUser.role === 'Guru') {
+            document.getElementById('menuGuru').classList.remove('hidden');
+            // Meminta daftar siswa via API
+            panggilAPI({ action: 'getDaftarSiswa' }, function(res) { siapkanDaftarSiswa(res.data); });
+          } else {
+            document.getElementById('menuSiswaWali').classList.remove('hidden');
+          }
+        }
+      }
+
+      function tampilkanLeaderboard(dataTop) {
+        var wadah = document.getElementById('listLeaderboard');
+        if (!dataTop || dataTop.length === 0) {
+          wadah.innerHTML = '<p style="font-size: 12px; color: #888;">Belum ada data nilai karakter untuk saat ini.</p>';
+          return;
+        }
+
+        var html = '';
+        var medali = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+        var kelasJuara = ['juara-1', 'juara-2', 'juara-3', '', ''];
+
+        for (var i = 0; i < dataTop.length; i++) {
+          var m = medali[i] || (i+1);
+          var c = kelasJuara[i] || '';
+          var skorText = parseFloat(dataTop[i].rata).toFixed(2); 
+          html += '<div class="peringkat-item ' + c + '"><span>' + m + ' ' + dataTop[i].nama + '</span><span>⭐ ' + skorText + '</span></div>';
+        }
+        wadah.innerHTML = html;
+      }
+
+      function siapkanDaftarSiswa(data) {
+        dataSiswaGlobal = data; 
+        var datalist = document.getElementById('listSiswa');
+        datalist.innerHTML = ''; 
+        for (var i = 0; i < data.length; i++) {
+          var option = document.createElement('option');
+          option.value = data[i].nis + " - " + data[i].nama; 
+          datalist.appendChild(option);
+        }
+      }
+
+      function autoIsiKelas() {
+        var pilihan = document.getElementById('inputPencarianSiswa').value;
+        for (var i = 0; i < dataSiswaGlobal.length; i++) {
+          if ((dataSiswaGlobal[i].nis + " - " + dataSiswaGlobal[i].nama) === pilihan) {
+            document.getElementById('inputKelas').value = dataSiswaGlobal[i].kelas;
+            break;
+          }
+        }
+        document.getElementById('pesanGuru').innerText = "";
+        document.getElementById('areaRapor').classList.add('hidden');
+      }
+
+      function simpanNilai() {
+        var namaSiswa = document.getElementById('inputPencarianSiswa').value.trim();
+        var kelas = document.getElementById('inputKelas').value.trim();
+        var karakter = document.getElementById('inputKarakter').value;
+        var nilai = document.getElementById('inputNilai').value;
+        var namaGuru = dataLoginSekarang.nama; 
+        
+        if(namaSiswa === "" || kelas === "" || karakter === "" || nilai === "") {
+          document.getElementById('pesanGuru').innerText = "Mohon lengkapi data untuk menyimpan nilai!";
+          document.getElementById('pesanGuru').style.color = "#ff5252";
+          return;
+        }
+        document.getElementById('pesanGuru').innerText = "Menyimpan data ke server...";
+        document.getElementById('pesanGuru').style.color = "#2196F3";
+        
+        // Simpan nilai via API
+        var payload = { action: 'simpanDataKarakter', kelas: kelas, namaSiswa: namaSiswa, karakter: karakter, nilai: nilai, namaGuru: namaGuru };
+        panggilAPI(payload, setelahSimpan);
+      }
+
+      function setelahSimpan(hasilObj) {
+        if(hasilObj.status === 'Sukses') {
+          document.getElementById('pesanGuru').innerText = "Nilai berhasil disimpan!";
+          document.getElementById('pesanGuru').style.color = "#4CAF50";
+          document.getElementById('inputKarakter').value = "";
+          document.getElementById('inputNilai').value = "";
+          
+          // Refresh leaderboard via API
+          panggilAPI({ action: 'getLeaderboard' }, function(res) { tampilkanLeaderboard(res.data); });
+        } else {
+          document.getElementById('pesanGuru').innerText = "Gagal menyimpan!";
+          document.getElementById('pesanGuru').style.color = "#ff5252";
+        }
+      }
+
+      function lihatRaporGuru() {
+        var pilihanSiswa = document.getElementById('inputPencarianSiswa').value.trim();
+        var kelas = document.getElementById('inputKelas').value.trim();
+
+        if (pilihanSiswa === "" || kelas === "") {
+          document.getElementById('pesanGuru').innerText = "Silakan cari dan pilih siswa terlebih dahulu!";
+          document.getElementById('pesanGuru').style.color = "#ff5252";
+          return;
+        }
+
+        document.getElementById('pesanGuru').innerText = ""; 
+        var nis = pilihanSiswa.split(" - ")[0].trim();
+        namaSiswaSedangDilihat = pilihanSiswa.split(" - ")[1].trim(); 
+
+        document.getElementById('areaRapor').classList.remove('hidden');
+        document.getElementById('pesanRapor').innerText = "Sedang mengambil data nilai untuk " + namaSiswaSedangDilihat + "...";
+        document.getElementById('tempatTabel').innerHTML = "";
+        
+        // Ambil data nilai via API
+        panggilAPI({ action: 'getNilaiSiswa', kelas: kelas, nis: nis }, renderGrafik);
+      }
+
+      function lihatRaporSiswaWali() {
+        document.getElementById('areaRapor').classList.remove('hidden');
+        namaSiswaSedangDilihat = dataLoginSekarang.nama; 
+        document.getElementById('pesanRapor').innerText = "Rapor Karakter: " + namaSiswaSedangDilihat;
+        document.getElementById('tempatTabel').innerHTML = "";
+        
+        var kelas = dataLoginSekarang.kelas;
+        var nis = dataLoginSekarang.username;
+        if(dataLoginSekarang.role === 'Wali') nis = nis.replace(/W-/i, ''); 
+
+        // Ambil data nilai via API
+        panggilAPI({ action: 'getNilaiSiswa', kelas: kelas, nis: nis }, renderGrafik);
+      }
+
+      function renderGrafik(hasil) {
+        if(hasil.status === 'Gagal') {
+          document.getElementById('pesanRapor').innerText = hasil.pesan;
+          document.getElementById('pesanRapor').style.color = "#ff5252";
+          document.getElementById('btnDownloadPDF').classList.add('hidden'); 
+          return;
+        }
+
+        var dataNilai = hasil.data;
+        if(dataNilai.length === 0) {
+          document.getElementById('pesanRapor').innerText = "Belum ada nilai yang diinput.";
+          document.getElementById('pesanRapor').style.color = "#FF9800";
+          document.getElementById('btnDownloadPDF').classList.add('hidden'); 
+          if(grafikSaya) grafikSaya.destroy();
+          return;
+        }
+
+        document.getElementById('btnDownloadPDF').classList.remove('hidden');
+        document.getElementById('pesanRapor').style.color = "#4CAF50";
+
+        var bobot = { "Sangat Baik": 4, "Baik": 3, "Cukup": 2, "Perlu Bimbingan": 1 };
+        var total = { "Kedisiplinan": {skor:0, count:0}, "Kejujuran": {skor:0, count:0}, "Tanggung Jawab": {skor:0, count:0}, "Sopan Santun": {skor:0, count:0} };
+
+        var htmlTabel = "<table><tr><th>Tanggal</th><th>Karakter</th><th>Predikat</th></tr>";
+
+        for(var i=0; i < dataNilai.length; i++) {
+          var kar = dataNilai[i].karakter;
+          var pred = dataNilai[i].predikat;
+          
+          if(total[kar] && bobot[pred]) {
+            total[kar].skor += bobot[pred];
+            total[kar].count += 1;
+          }
+          htmlTabel += "<tr><td>"+dataNilai[i].tanggal+"</td><td>"+kar+"</td><td>"+pred+"</td></tr>";
+        }
+        htmlTabel += "</table>";
+        document.getElementById('tempatTabel').innerHTML = htmlTabel;
+
+        var labelKarakter = ['Kedisiplinan', 'Kejujuran', 'Tanggung Jawab', 'Sopan Santun'];
+        var rataRata = [];
+
+        for(var j=0; j < labelKarakter.length; j++) {
+          var k = labelKarakter[j];
+          if(total[k].count > 0) rataRata.push(total[k].skor / total[k].count);
+          else rataRata.push(0); 
+        }
+
+        var ctx = document.getElementById('grafikKarakter').getContext('2d');
+        if(grafikSaya) grafikSaya.destroy(); 
+        
+        grafikSaya = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labelKarakter,
+            datasets: [{
+              label: 'Rata-rata Nilai Karakter',
+              data: rataRata,
+              backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: { 
+                beginAtZero: true, 
+                max: 4,
+                ticks: {
+                  stepSize: 1,
+                  callback: function(value) {
+                    if(value === 4) return 'Sgt Baik';
+                    if(value === 3) return 'Baik';
+                    if(value === 2) return 'Cukup';
+                    if(value === 1) return 'Bimbingan';
+                    return '';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function downloadPDF() {
+        var elemen = document.getElementById('kontenRapor');
+        var tabel = document.getElementById('tempatTabel');
+        var btn = document.getElementById('btnDownloadPDF');
+        var canvas = document.getElementById('grafikKarakter');
+        
+        window.scrollTo(0, 0);
+
+        var styleAsliMaxHeight = tabel.style.maxHeight;
+        var styleAsliOverflow = tabel.style.overflowY;
+        tabel.style.maxHeight = 'none';
+        tabel.style.overflowY = 'visible';
+
+        var styleAsliBg = elemen.style.backgroundColor;
+        var styleAsliColor = elemen.style.color;
+        elemen.style.backgroundColor = '#ffffff';
+        elemen.style.color = '#000000';
+        elemen.style.padding = '20px';
+
+        var imgData = canvas.toDataURL("image/png", 1.0);
+        var imgTiruan = document.createElement('img');
+        imgTiruan.src = imgData;
+        imgTiruan.id = 'grafikTiruan';
+        imgTiruan.style.maxWidth = '100%';
+        imgTiruan.style.height = 'auto';
+        imgTiruan.style.margin = '0 auto';
+        imgTiruan.style.display = 'block';
+        
+        canvas.style.display = 'none';
+        canvas.parentNode.insertBefore(imgTiruan, canvas);
+
+        btn.innerText = "⏳ Memproses PDF...";
+        
+        var namaFile = 'Rapor_Karakter_' + (namaSiswaSedangDilihat ? namaSiswaSedangDilihat.replace(/\s+/g, '_') : 'Siswa') + '.pdf';
+        
+        var opt = {
+          margin:       0.5,
+          filename:     namaFile,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(elemen).save().then(function() {
+          btn.innerText = "📄 Download Rapor (PDF)";
+          tabel.style.maxHeight = styleAsliMaxHeight;
+          tabel.style.overflowY = styleAsliOverflow;
+          elemen.style.backgroundColor = styleAsliBg;
+          elemen.style.color = styleAsliColor;
+          elemen.style.padding = '';
+          
+          var hapusImg = document.getElementById('grafikTiruan');
+          if (hapusImg) hapusImg.parentNode.removeChild(hapusImg);
+          canvas.style.display = 'block';
+        });
+      }
+      
+      function keluar() {
+        try {
+          document.getElementById('dashboardPage').classList.add('hidden');
+          document.getElementById('menuGuru').classList.add('hidden');
+          document.getElementById('menuSiswaWali').classList.add('hidden');
+          document.getElementById('areaRapor').classList.add('hidden');
+          document.getElementById('leaderboardBox').classList.add('hidden');
+          
+          document.getElementById('loginPage').classList.remove('hidden');
+          
+          document.getElementById('username').value = "";
+          document.getElementById('password').value = "";
+          document.getElementById('pesan').innerText = "";
+          document.getElementById('inputPencarianSiswa').value = "";
+          document.getElementById('inputKelas').value = "";
+          document.getElementById('pesanGuru').innerText = "";
+          
+          if (grafikSaya !== null) {
+            grafikSaya.destroy();
+            grafikSaya = null; 
+          }
+
+          dataLoginSekarang = {};
+          namaSiswaSedangDilihat = "";
+
+          window.scrollTo(0, 0);
+
+        } catch (error) {
+          console.error("Terjadi kemacetan saat logout, memaksa refresh...", error);
+          window.location.reload(); 
+        }
+      }
+    </script>
+  </body>
 </html>
