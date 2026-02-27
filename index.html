@@ -210,11 +210,26 @@
         panggilAPI({ action: 'cekLogin', username: user, password: pass }, setelahLogin);
       }
 
-      function setelahLogin(dataUser) {
+function setelahLogin(dataUser) {
         if (dataUser.status === 'Gagal') {
           document.getElementById('pesan').innerText = "Username atau Password salah!";
         } else {
-          dataLoginSekarang = { username: document.getElementById('username').value.trim(), role: dataUser.role, kelas: dataUser.kelas, nama: dataUser.nama };
+          dataLoginSekarang = { 
+            username: document.getElementById('username').value.trim(), 
+            role: dataUser.role, 
+            kelas: dataUser.kelas, 
+            nama: dataUser.nama 
+          };
+
+          // --- JURUS NOTIFIKASI: Daftarkan ID User ke OneSignal ---
+          // Kita pakai username (NIS/NIP) sebagai ID unik di OneSignal
+          if (window.OneSignalDeferred) {
+            window.OneSignalDeferred.push(async function(OneSignal) {
+              await OneSignal.login(dataLoginSekarang.username);
+              console.log("OneSignal: Terdaftar sebagai " + dataLoginSekarang.username);
+            });
+          }
+          // -------------------------------------------------------
 
           document.getElementById('loginPage').classList.add('hidden');
           document.getElementById('dashboardPage').classList.remove('hidden');
