@@ -118,10 +118,10 @@
                     <canvas id="grafikKarakter"></canvas>
                     <div id="tempatTabel" style="overflow-x:auto;"></div>
                 </div>
-                <button onclick="downloadPDF()" class="btn-pdf">📄 Download PDF</button>
+                <button onclick="previewPDF()" class="btn-pdf">👁️ Preview PDF</button>
             </div>
             
-            </section>
+        </section>
 
         <section id="sec-agenda" class="container hidden">
             <h3 style="text-align: left; color:#4CAF50;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
@@ -280,9 +280,11 @@
       }
 
       function toggleTema() { document.body.classList.toggle("dark-mode"); }
-function downloadPDF() {
+
+      // --- FUNGSI BARU: PREVIEW PDF ---
+      function previewPDF() {
         let btn = document.querySelector('.btn-pdf');
-        btn.innerText = "⏳ Sedang Memproses...";
+        btn.innerText = "⏳ Membuat Preview...";
 
         setTimeout(() => {
           let konten = document.getElementById('kontenRapor');
@@ -307,11 +309,11 @@ function downloadPDF() {
           // 3. Buat Biodata Siswa
           let namaSiswa = document.getElementById('inputPencarianSiswa') && document.getElementById('inputPencarianSiswa').value 
                           ? document.getElementById('inputPencarianSiswa').value.split(" - ")[1] || document.getElementById('inputPencarianSiswa').value
-                          : dataLoginSekarang.nama;
+                          : (typeof dataLoginSekarang !== 'undefined' ? dataLoginSekarang.nama : '');
           
           let kelasSiswa = document.getElementById('inputKelas') && document.getElementById('inputKelas').value 
                            ? document.getElementById('inputKelas').value 
-                           : dataLoginSekarang.kelas;
+                           : (typeof dataLoginSekarang !== 'undefined' ? dataLoginSekarang.kelas : '');
 
           let infoSiswa = document.createElement('div');
           infoSiswa.id = "infoSementara";
@@ -340,7 +342,7 @@ function downloadPDF() {
           canvas.style.display = "none"; // Sembunyikan canvas asli
           canvas.parentNode.insertBefore(imgTemp, canvas);
 
-          // 6. Cetak ke PDF
+          // 6. Cetak ke PDF via Blob URL (Preview)
           let opt = {
             margin:       0.4,
             filename:     `Rapor_Karakter_${namaSiswa || 'Siswa'}.pdf`,
@@ -349,7 +351,11 @@ function downloadPDF() {
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
           };
 
-          html2pdf().set(opt).from(konten).save().then(() => {
+          html2pdf().set(opt).from(konten).output('bloburl').then(function(pdfUrl) {
+            
+            // Buka hasil PDF di Tab Baru
+            window.open(pdfUrl, '_blank');
+
             // 7. BERSIH-BERSIH (Kembalikan seperti semula)
             document.getElementById('kopSementara').remove();
             document.getElementById('infoSementara').remove();
@@ -360,16 +366,17 @@ function downloadPDF() {
             konten.style.padding = originalPadding;
             konten.style.color = "";
             
-            btn.innerText = "📄 Download PDF";
+            btn.innerText = "👁️ Preview PDF";
           }).catch(err => {
             console.error(err);
-            alert("Terjadi kesalahan saat membuat PDF.");
-            btn.innerText = "📄 Download PDF";
+            alert("Terjadi kesalahan saat membuat preview.");
+            btn.innerText = "👁️ Preview PDF";
           });
 
         }, 300); // Kasih jeda napas sedikit
       }      
-        function prosesLogout() {
+
+      function prosesLogout() {
         if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
           window.location.reload();
         }
