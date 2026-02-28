@@ -282,31 +282,49 @@
       function toggleTema() { document.body.classList.toggle("dark-mode"); }
 
       // --- FUNGSI BARU: PREVIEW PDF ---
-      function previewPDF() {
+function previewPDF() {
         let btn = document.querySelector('.btn-pdf');
-        btn.innerText = "⏳ Membuat Preview...";
+        btn.innerText = "⏳ Sedang Memproses...";
+
+        // 1. Munculkan Layar Putih (Overlay) biar transisi gak kelihatan berantakan
+        let loadingOverlay = document.createElement('div');
+        loadingOverlay.style.position = 'fixed';
+        loadingOverlay.style.top = '0'; loadingOverlay.style.left = '0';
+        loadingOverlay.style.width = '100vw'; loadingOverlay.style.height = '100vh';
+        loadingOverlay.style.backgroundColor = 'rgba(255,255,255,0.95)';
+        loadingOverlay.style.zIndex = '9999';
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.justifyContent = 'center';
+        loadingOverlay.style.alignItems = 'center';
+        loadingOverlay.innerHTML = '<h3 style="color:#4CAF50;">⏳ Menyiapkan Dokumen...</h3>';
+        document.body.appendChild(loadingOverlay);
 
         setTimeout(() => {
           let konten = document.getElementById('kontenRapor');
+          let tabelDiv = document.getElementById('tempatTabel'); // Ambil bungkus tabel
           
-          // 1. Amankan warna asli biar bisa dikembalikan nanti
+          // 2. Amankan style asli
           let originalBg = konten.style.backgroundColor;
           let originalPadding = konten.style.padding;
+          let originalOverflow = tabelDiv.style.overflowX; // Kunci masalahnya disini
           
-          // Paksa background putih biar teks kebaca di PDF
           konten.style.backgroundColor = "#ffffff";
           konten.style.padding = "20px";
           konten.style.color = "#000000";
+          
+          // MATIKAN OVERFLOW SEMENTARA BIAR TABEL GAK KEPOTONG
+          tabelDiv.style.overflowX = "visible"; 
 
-          // 2. Pinjam Kop Sekolah sebentar
+          // 3. Pinjam Kop Sekolah sebentar
           let kopAsli = document.querySelector('.kop-sekolah');
           let kopClone = kopAsli.cloneNode(true);
           kopClone.id = "kopSementara";
           kopClone.style.boxShadow = "none";
           kopClone.style.border = "1px solid #ddd";
           kopClone.style.marginBottom = "20px";
+          kopClone.style.width = "100%"; // Pastikan lebarnya full
           
-          // 3. Buat Biodata Siswa
+          // 4. Buat Biodata Siswa
           let namaSiswa = document.getElementById('inputPencarianSiswa') && document.getElementById('inputPencarianSiswa').value 
                           ? document.getElementById('inputPencarianSiswa').value.split(" - ")[1] || document.getElementById('inputPencarianSiswa').value
                           : (typeof dataLoginSekarang !== 'undefined' ? dataLoginSekarang.nama : '');
@@ -325,11 +343,11 @@
               <hr style="margin-bottom:20px; border: 0; border-top: 1px solid #ddd;">
           `;
 
-          // 4. Masukkan Kop dan Biodata ke PALING ATAS area rapor
+          // 5. Masukkan Kop dan Biodata
           konten.insertBefore(infoSiswa, konten.firstChild);
           konten.insertBefore(kopClone, konten.firstChild);
 
-          // 5. Trik Canvas ke Gambar biar grafik muncul
+          // 6. Trik Canvas ke Gambar
           let canvas = document.getElementById('grafikKarakter');
           let imgTemp = document.createElement('img');
           imgTemp.id = "gambarCanvasSementara";
@@ -339,41 +357,47 @@
           imgTemp.style.display = "block";
           imgTemp.style.margin = "0 auto 20px auto";
           
-          canvas.style.display = "none"; // Sembunyikan canvas asli
+          canvas.style.display = "none"; 
           canvas.parentNode.insertBefore(imgTemp, canvas);
 
-          // 6. Cetak ke PDF via Blob URL (Preview)
-          let opt = {
-            margin:       0.4,
-            filename:     `Rapor_Karakter_${namaSiswa || 'Siswa'}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+          // 7. TUNGGU GAMBAR BENAR-BENAR MUNCUL BARU CETAK PDF
+          imgTemp.onload = () => {
+              let opt = {
+                margin:       [0.5, 0.4, 0.5, 0.4], // Margin atas, kanan, bawah, kiri
+                filename:     `Rapor_Karakter_${namaSiswa || 'Siswa'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                // Tambahan scrollY: 0 untuk mencegah blank saat posisi di-scroll ke bawah
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+              };
+
+              html2pdf().set(opt).from(konten).output('bloburl').then(function(pdfUrl) {
+                
+                window.open(pdfUrl, '_blank');
+
+                // 8. BERSIH-BERSIH DOM
+                document.getElementById('kopSementara').remove();
+                document.getElementById('infoSementara').remove();
+                document.getElementById('gambarCanvasSementara').remove();
+                
+                canvas.style.display = "block"; 
+                konten.style.backgroundColor = originalBg;
+                konten.style.padding = originalPadding;
+                konten.style.color = "";
+                tabelDiv.style.overflowX = originalOverflow; // Kembalikan overflow tabel
+                
+                document.body.removeChild(loadingOverlay); // Hapus layar loading
+                btn.innerText = "👁️ Preview PDF";
+                
+              }).catch(err => {
+                console.error(err);
+                alert("Terjadi kesalahan saat membuat preview.");
+                document.body.removeChild(loadingOverlay);
+                btn.innerText = "👁️ Preview PDF";
+              });
           };
 
-          html2pdf().set(opt).from(konten).output('bloburl').then(function(pdfUrl) {
-            
-            // Buka hasil PDF di Tab Baru
-            window.open(pdfUrl, '_blank');
-
-            // 7. BERSIH-BERSIH (Kembalikan seperti semula)
-            document.getElementById('kopSementara').remove();
-            document.getElementById('infoSementara').remove();
-            document.getElementById('gambarCanvasSementara').remove();
-            
-            canvas.style.display = "block"; // Munculkan grafik lagi
-            konten.style.backgroundColor = originalBg;
-            konten.style.padding = originalPadding;
-            konten.style.color = "";
-            
-            btn.innerText = "👁️ Preview PDF";
-          }).catch(err => {
-            console.error(err);
-            alert("Terjadi kesalahan saat membuat preview.");
-            btn.innerText = "👁️ Preview PDF";
-          });
-
-        }, 300); // Kasih jeda napas sedikit
+        }, 300);
       }      
 
       function prosesLogout() {
