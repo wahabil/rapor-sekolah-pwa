@@ -1,19 +1,19 @@
 {
-  "name": "Pendidikan Kharakter SDI",
-  "short_name": "Sispek",
-  "description": "Aplikasi Pendidikan Kharakter",
-  "start_url": "index.html",
+  "name": "Rapor Karakter SD Islam Hidayatul Islamiyah",
+  "short_name": "Rapor Karakter",
+  "description": "Aplikasi Penilaian Karakter Siswa",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f0fdf4",
-  "theme_color": "#198754",
+  "background_color": "#f4f7f6",
+  "theme_color": "#4CAF50",
   "icons": [
     {
-      "src": "hidis.png",
+      "src": "https://url.hidis.id/logo/hidis.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "hidis.png",
+      "src": "https://url.hidis.id/logo/hidis.png",
       "sizes": "512x512",
       "type": "image/png"
     }
