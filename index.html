@@ -1,174 +1,152 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rapor Karakter PWA</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "e96a4234-01bf-4729-b0ec-ca813d552360",
-        });
+        await OneSignal.init({ appId: "e96a4234-01bf-4729-b0ec-ca813d552360" });
       });
     </script>
     
     <style>
-      /* --- VARIABEL & RESET --- */
-      body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; margin-top: 20px; background-color: #f4f7f6; color: #333; transition: background-color 0.3s, color 0.3s; }
+      /* --- RESET & BASE --- */
+      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 80px; }
+      .hidden { display: none !important; }
       
-      /* --- GAYA TEMA TERANG (DEFAULT) --- */
-      .kop-sekolah, .container { max-width: 450px; width: 90%; margin: 0 auto 20px auto; box-sizing: border-box; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: background-color 0.3s, box-shadow 0.3s; }
-
-      .kop-sekolah { padding: 20px 15px; border-top: 5px solid #4CAF50; display: flex; align-items: center; justify-content: center; gap: 15px; }
-      .kop-logo { width: 75px; height: auto; }
-      .kop-teks { flex: 1; text-align: center; }
-      .kop-yayasan { font-size: 11px; font-weight: bold; color: #777; letter-spacing: 1.5px; margin: 0; }
-      .kop-nama { font-size: 18px; font-weight: bold; color: #2c3e50; margin: 5px 0; line-height: 1.2; }
-      .kop-alamat { font-size: 11px; color: #666; margin: 5px 0 2px 0; }
-      .kop-kontak { font-size: 11px; color: #0066cc; margin: 0; }
-      .kop-kontak a { color: #0066cc; text-decoration: none; }
-      .kop-kontak a:hover { text-decoration: underline; }
-
-      .container { padding: 20px; }
+      /* --- LOGIN PAGE --- */
+      #loginPage { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; box-sizing: border-box; }
       
-      input, select, button { width: 95%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; transition: background-color 0.3s, color 0.3s; }
-      button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; transition: background-color 0.3s; }
-      button:hover { background-color: #45a049; }
-      .btn-secondary { background-color: #9C27B0; }
-      .btn-secondary:hover { background-color: #7b1fa2; }
-      .btn-pdf { background-color: #E91E63; } 
-      .btn-pdf:hover { background-color: #C2185B; }
+      /* --- LAYOUT CONTAINER --- */
+      .container { max-width: 450px; width: 92%; margin: 15px auto; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 15px; box-sizing: border-box; }
       
-      .hidden { display: none; }
-      hr { border: 0; height: 1px; background: #eee; margin: 20px 0; transition: background-color 0.3s; }
-      
-      .greeting-box { background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-      .greeting-box h2 { margin: 0 0 5px 0; color: white; font-size: 20px; }
-      .greeting-box p { margin: 0; color: #e8f5e9; font-size: 13px; }
+      /* --- KOP SEKOLAH --- */
+      .kop-sekolah { border-top: 5px solid #4CAF50; display: flex; align-items: center; gap: 12px; padding: 15px; margin-bottom: 10px; }
+      .kop-logo { width: 60px; height: auto; }
+      .kop-teks { flex: 1; }
+      .kop-nama { font-size: 14px; font-weight: bold; margin: 0; color: #2c3e50; }
+      .kop-alamat { font-size: 10px; color: #777; margin: 3px 0; }
 
-      .leaderboard-box { background: white; padding: 15px; border-radius: 8px; border: 2px solid #FFC107; margin-bottom: 20px; text-align: left; transition: background-color 0.3s; }
-      .leaderboard-title { color: #F57C00; font-size: 16px; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; font-weight: bold; }
-      .peringkat-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd; font-size: 13px; }
-      .peringkat-item:last-child { border-bottom: none; }
-      .juara-1 { font-weight: bold; color: #d4af37; font-size: 14px; } 
-      .juara-2 { font-weight: bold; color: #9e9e9e; } 
-      .juara-3 { font-weight: bold; color: #cd7f32; } 
+      /* --- DASHBOARD ELEMENTS --- */
+      .greeting-box { background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left; }
+      .greeting-box h2 { margin: 0; font-size: 18px; }
+      .greeting-box p { margin: 5px 0 0 0; font-size: 12px; opacity: 0.9; }
 
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; text-align: left; }
-      th, td { border: 1px solid #ddd; padding: 8px; }
-      th { background-color: #4CAF50; color: white; }
+      /* --- FORM INPUTS --- */
+      input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
+      button { background-color: #4CAF50; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+      button:active { transform: scale(0.98); }
+      .btn-secondary { background-color: #2196F3; }
+      .btn-logout { background-color: #f44336; margin-top: 20px; }
 
-      .wrap-tombol-tema { max-width: 450px; width: 90%; margin: 0 auto 10px auto; text-align: right; }
-      .btn-tema { width: auto; padding: 8px 15px; font-size: 12px; border-radius: 20px; background-color: #333; color: white; margin: 0; }
+      /* --- BOTTOM NAVIGATION --- */
+      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 9999; }
+      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: #95a5a6; font-size: 11px; cursor: pointer; transition: 0.3s; }
+      .nav-item i { font-size: 20px; margin-bottom: 4px; }
+      .nav-item.active { color: #4CAF50; font-weight: bold; }
 
-      /* --- GAYA TEMA GELAP (DARK MODE) --- */
+      /* --- AGENDA & LEADERBOARD CARDS --- */
+      .card-agenda { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #4CAF50; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+      .peringkat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
+      .juara-1 { color: #d4af37; font-weight: bold; }
+
+      /* --- DARK MODE --- */
       body.dark-mode { background-color: #121212; color: #e0e0e0; }
-      body.dark-mode .kop-sekolah, body.dark-mode .container { background-color: #1e1e1e; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-top-color: #388E3C; }
-      body.dark-mode .kop-yayasan, body.dark-mode .kop-alamat { color: #aaa; }
-      body.dark-mode .kop-nama { color: #81c784; } 
-      body.dark-mode .kop-kontak a { color: #64b5f6; }
-      body.dark-mode input, body.dark-mode select { background-color: #333; color: #fff; border: 1px solid #555; }
-      body.dark-mode input[readonly] { background-color: #2a2a2a !important; color: #888; }
-      body.dark-mode hr { background-color: #444; }
-      body.dark-mode td { border-color: #444; }
-      body.dark-mode th { background-color: #2e7d32; border-color: #444; }
-      body.dark-mode .btn-tema { background-color: #f4f7f6; color: #333; }
-      body.dark-mode .greeting-box { background-color: #2e7d32; } 
-      body.dark-mode .leaderboard-box { background-color: #262626; border-color: #F57C00; }
-      body.dark-mode .peringkat-item { border-bottom-color: #444; }
+      body.dark-mode .container, body.dark-mode .bottom-nav { background-color: #1e1e1e; border-color: #333; }
+      body.dark-mode input, body.dark-mode select { background-color: #2c2c2c; border-color: #444; color: white; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
 
-    <div class="wrap-tombol-tema">
-      <button class="btn-tema" id="btnTema" onclick="toggleTema()">🌙 Mode Gelap</button>
-    </div>
-
-    <div class="kop-sekolah">
-      <img src="https://url.hidis.id/logo/hidis.png" alt="Logo Sekolah" class="kop-logo">
-      <div class="kop-teks">
-        <p class="kop-yayasan">YAYASAN NURUL IHSAN</p>
-        <h1 class="kop-nama">SD ISLAM HIDAYATUL<br>ISLAMIYAH</h1>
-        <p class="kop-alamat">Jl. Sapi Perah Rt 003/02, Pondok Ranggon, Kec. Cipayung, Kota Jakarta Timur Prov. D.K.I. Jakarta</p>
-        <p class="kop-kontak">
-          Email : <a href="mailto:sekolah@sdihidayatulislamiyah.sch.id">sekolah@sdihidayatulislamiyah.sch.id</a><br>
-          <a href="http://www.sdihidayatulislamiyah.sch.id" target="_blank">www.sdihidayatulislamiyah.sch.id</a>
-        </p>
-      </div>
-    </div>
-
-    <div id="loginPage" class="container">
-      <h2 style="margin-top: 0;">Login Aplikasi</h2>
-      <input type="text" id="username" placeholder="Masukkan Username (NIS/NIP/W-NIS)">
-      <input type="password" id="password" placeholder="Masukkan Password">
-      <button onclick="prosesLogin()">Masuk</button>
-      <p id="pesan" style="color: #ff5252; font-size: 14px;"></p>
-    </div>
-
-    <div id="dashboardPage" class="container hidden">
-      
-      <div class="greeting-box">
-        <h2 id="judulRole">Selamat Datang!</h2>
-        <p id="tahunAjarDisplay" style="font-weight: bold; opacity: 0.9;"></p>
-      </div>
-
-      <div id="leaderboardBox" class="leaderboard-box hidden">
-        <h3 class="leaderboard-title">🏆 Top 5 Karakter Terbaik</h3>
-        <div id="listLeaderboard">
-          <p style="font-size: 12px; color: #888;">Memuat data peringkat...</p>
+    <div id="loginPage">
+        <div class="container" style="border-top: 5px solid #4CAF50;">
+            <img src="https://url.hidis.id/logo/hidis.png" width="80" style="margin-bottom: 10px;">
+            <h3>Login Rapor Hidis</h3>
+            <input type="text" id="username" placeholder="NIS / NIP">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="prosesLogin()">Masuk</button>
+            <p id="pesan" style="color:red; font-size: 12px;"></p>
         </div>
-      </div>
-      
-      <div id="menuGuru" class="hidden">
-        <h3 style="color: #4CAF50; margin-top: 0;">Menu Guru</h3>
-        <input list="listSiswa" id="inputPencarianSiswa" placeholder="1. Cari & Pilih Siswa (NIS/Nama)..." onchange="autoIsiKelas()">
-        <datalist id="listSiswa"></datalist>
-        <input type="text" id="inputKelas" placeholder="Kelas (Otomatis Terisi)" readonly style="background-color: #e9e9e9; cursor: not-allowed;">
-        <button onclick="lihatRaporGuru()" class="btn-secondary">Lihat Grafik & Rapor Siswa Ini</button>
-        <hr>
-        <h4 style="margin: 10px 0;">Atau Input Nilai Baru:</h4>
-        <select id="inputKarakter">
-          <option value="">-- Pilih Karakter --</option>
-          <option value="Kedisiplinan">Kedisiplinan</option>
-          <option value="Kejujuran">Kejujuran</option>
-          <option value="Tanggung Jawab">Tanggung Jawab</option>
-          <option value="Sopan Santun">Sopan Santun</option>
-        </select>
-        <select id="inputNilai">
-          <option value="">-- Pilih Predikat --</option>
-          <option value="Sangat Baik">Sangat Baik</option>
-          <option value="Baik">Baik</option>
-          <option value="Cukup">Cukup</option>
-          <option value="Perlu Bimbingan">Perlu Bimbingan</option>
-        </select>
-        <button onclick="simpanNilai()" style="background-color: #2196F3;">Simpan Nilai</button>
-        <p id="pesanGuru" style="font-weight: bold; font-size: 14px;"></p>
-      </div>
+    </div>
 
-      <div id="menuSiswaWali" class="hidden">
-        <button onclick="lihatRaporSiswaWali()" style="background-color: #FF9800;">Lihat Rapor Karakter & Grafik</button>
-      </div>
-
-      <div id="areaRapor" class="hidden">
-        <hr>
+    <div id="dashboardPage" class="hidden">
         
-        <div id="kontenRapor">
-          <h3 style="margin-top: 0;">📊 Grafik Perkembangan Karakter</h3>
-          <p id="pesanRapor" style="font-size: 13px; color: #2196F3; font-weight: bold;"></p>
-          <canvas id="grafikKarakter" width="400" height="250"></canvas>
-          <div id="tempatTabel" style="max-height: 200px; overflow-y: auto; margin-top: 15px;"></div>
-        </div>
+        <section id="sec-home" class="container">
+            <div class="greeting-box">
+                <h2 id="judulRole">Halo!</h2>
+                <p id="tahunAjarDisplay"></p>
+            </div>
 
-        <button id="btnDownloadPDF" onclick="downloadPDF()" class="btn-pdf">📄 Download Rapor (PDF)</button>
-      </div>
-      
-      <hr>
-      <button onclick="keluar()" style="background-color: #f44336;">Keluar</button>
+            <div id="menuGuru" class="hidden">
+                <input list="listSiswa" id="inputPencarianSiswa" placeholder="Cari Siswa..." onchange="autoIsiKelas()">
+                <datalist id="listSiswa"></datalist>
+                <input type="text" id="inputKelas" placeholder="Kelas" readonly style="background:#f0f0f0;">
+                <select id="inputKarakter">
+                    <option value="">-- Pilih Karakter --</option>
+                    <option value="Kedisiplinan">Kedisiplinan</option>
+                    <option value="Kejujuran">Kejujuran</option>
+                    <option value="Tanggung Jawab">Tanggung Jawab</option>
+                    <option value="Sopan Santun">Sopan Santun</option>
+                </select>
+                <select id="inputNilai">
+                    <option value="">-- Pilih Predikat --</option>
+                    <option value="Sangat Baik">Sangat Baik</option>
+                    <option value="Baik">Baik</option>
+                    <option value="Cukup">Cukup</option>
+                    <option value="Perlu Bimbingan">Perlu Bimbingan</option>
+                </select>
+                <button onclick="simpanNilai()">Simpan & Kirim WA</button>
+                <button onclick="lihatRaporGuru()" class="btn-secondary">Lihat Rapor Siswa</button>
+            </div>
+
+            <div id="menuSiswaWali" class="hidden">
+                <button onclick="navKe('agenda', document.querySelector('.nav-agenda'))">Lihat Info Agenda</button>
+                <button onclick="lihatRaporSiswaWali()" class="btn-secondary">Cek Rapor Saya</button>
+            </div>
+
+            <div id="areaRapor" class="hidden">
+                <hr>
+                <div id="kontenRapor">
+                    <canvas id="grafikKarakter"></canvas>
+                    <div id="tempatTabel"></div>
+                </div>
+                <button onclick="downloadPDF()" class="btn-secondary" style="background: #E91E63;">Download PDF</button>
+            </div>
+            
+            <button onclick="window.location.reload()" class="btn-logout">Keluar Aplikasi</button>
+        </section>
+
+        <section id="sec-agenda" class="container hidden">
+            <h3 style="text-align: left;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
+            <div id="list-agenda">Memuat agenda...</div>
+        </section>
+
+        <section id="sec-leaderboard" class="container hidden">
+            <h3 style="text-align: left; color: #F57C00;"><i class="fas fa-trophy"></i> Peringkat Karakter</h3>
+            <div id="listLeaderboard">Memuat data...</div>
+        </section>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="navKe('home', this)">
+                <i class="fas fa-home"></i><span>Beranda</span>
+            </div>
+            <div class="nav-item nav-agenda" onclick="navKe('agenda', this)">
+                <i class="fas fa-calendar-day"></i><span>Agenda</span>
+            </div>
+            <div class="nav-item" onclick="navKe('leaderboard', this)">
+                <i class="fas fa-award"></i><span>Rank</span>
+            </div>
+            <div class="nav-item" onclick="toggleTema()">
+                <i class="fas fa-moon"></i><span>Tema</span>
+            </div>
+        </nav>
     </div>
 
     <script>
@@ -176,204 +154,148 @@
 
       var dataSiswaGlobal = []; 
       var dataLoginSekarang = {}; 
-      var grafikSaya = null; 
-      var namaSiswaSedangDilihat = ""; 
+      var grafikSaya = null;
 
-      function panggilAPI(payload, callbackSukses) {
-        fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(result => callbackSukses(result))
-        .catch(error => {
-          console.error('Error fetching API:', error);
-          alert('Gagal terhubung ke database. Pastikan internet aktif.');
-        });
+      // --- LOGIKA NAVIGASI ---
+      function navKe(target, el) {
+        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('sec-' + target).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        
+        if(target === 'agenda') loadAgenda();
+        if(target === 'leaderboard') loadLeaderboard();
       }
 
-      function toggleTema() {
-        var body = document.body;
-        var btn = document.getElementById("btnTema");
-        body.classList.toggle("dark-mode");
-        if (body.classList.contains("dark-mode")) {
-          btn.innerText = "☀️ Mode Terang";
-          Chart.defaults.color = '#e0e0e0';
-        } else {
-          btn.innerText = "🌙 Mode Gelap";
-          Chart.defaults.color = '#666';
-        }
-        if (grafikSaya) grafikSaya.update();
+      function panggilAPI(payload, callback) {
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(r => r.json()).then(res => callback(res))
+        .catch(e => alert("Koneksi Error"));
       }
 
       function prosesLogin() {
-        var user = document.getElementById('username').value;
-        var pass = document.getElementById('password').value;
-        document.getElementById('pesan').innerText = "Mengecek data di server...";
-        panggilAPI({ action: 'cekLogin', username: user, password: pass }, setelahLogin);
+        var u = document.getElementById('username').value;
+        var p = document.getElementById('password').value;
+        panggilAPI({ action: 'cekLogin', username: u, password: p }, setelahLogin);
       }
 
-      function setelahLogin(dataUser) {
-        if (dataUser.status === 'Gagal') {
-          document.getElementById('pesan').innerText = "Username atau Password salah!";
+      function setelahLogin(res) {
+        if(res.status === 'Gagal') return document.getElementById('pesan').innerText = "Gagal Login";
+        
+        dataLoginSekarang = { username: document.getElementById('username').value, ...res };
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('dashboardPage').classList.remove('hidden');
+        document.getElementById('judulRole').innerText = "Halo, " + res.nama;
+        document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (res.tahun || "-");
+
+        if(res.role === 'Guru') {
+          document.getElementById('menuGuru').classList.remove('hidden');
+          panggilAPI({ action: 'getDaftarSiswa' }, d => siapkanDaftarSiswa(d.data));
         } else {
-          dataLoginSekarang = { 
-            username: document.getElementById('username').value.trim(), 
-            role: dataUser.role, 
-            kelas: dataUser.kelas, 
-            nama: dataUser.nama 
-          };
-
-          // --- NOTIFIKASI ONESIGNAL ---
-          if (window.OneSignalDeferred) {
-            OneSignalDeferred.push(async function(OneSignal) {
-              await OneSignal.login(dataLoginSekarang.username);
-              console.log("OneSignal: Login sebagai " + dataLoginSekarang.username);
-            });
-          }
-
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('dashboardPage').classList.remove('hidden');
-          
-          var sapaan = "Halo, " + dataUser.nama + " (" + dataUser.role + ")";
-          if (dataUser.kelas !== "" && dataUser.role !== "Guru") sapaan += " - Kelas " + dataUser.kelas;
-          
-          document.getElementById('judulRole').innerText = sapaan;
-          // TAMPILKAN TAHUN PELAJARAN DARI GS
-          document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (dataUser.tahun || "-");
-          
-          document.getElementById('leaderboardBox').classList.remove('hidden');
-          panggilAPI({ action: 'getLeaderboard' }, function(res) { tampilkanLeaderboard(res.data); });
-
-          if(dataUser.role === 'Guru') {
-            document.getElementById('menuGuru').classList.remove('hidden');
-            panggilAPI({ action: 'getDaftarSiswa' }, function(res) { siapkanDaftarSiswa(res.data); });
-          } else {
-            document.getElementById('menuSiswaWali').classList.remove('hidden');
-          }
+          document.getElementById('menuSiswaWali').classList.remove('hidden');
         }
-      }
-
-      function tampilkanLeaderboard(dataTop) {
-        var wadah = document.getElementById('listLeaderboard');
-        if (!dataTop || dataTop.length === 0) {
-          wadah.innerHTML = '<p style="font-size: 12px; color: #888;">Belum ada data nilai karakter untuk saat ini.</p>';
-          return;
-        }
-        var html = '';
-        var medali = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-        var kelasJuara = ['juara-1', 'juara-2', 'juara-3', '', ''];
-        for (var i = 0; i < dataTop.length; i++) {
-          var m = medali[i] || (i+1);
-          var c = kelasJuara[i] || '';
-          var skorText = parseFloat(dataTop[i].rata).toFixed(2); 
-          html += '<div class="peringkat-item ' + c + '"><span>' + m + ' ' + dataTop[i].nama + '</span><span>⭐ ' + skorText + '</span></div>';
-        }
-        wadah.innerHTML = html;
       }
 
       function siapkanDaftarSiswa(data) {
-        dataSiswaGlobal = data; 
-        var datalist = document.getElementById('listSiswa');
-        datalist.innerHTML = ''; 
-        for (var i = 0; i < data.length; i++) {
-          var option = document.createElement('option');
-          option.value = data[i].nis + " - " + data[i].nama; 
-          datalist.appendChild(option);
-        }
+        dataSiswaGlobal = data;
+        let dl = document.getElementById('listSiswa');
+        data.forEach(s => {
+          let opt = document.createElement('option');
+          opt.value = s.nis + " - " + s.nama;
+          dl.appendChild(opt);
+        });
       }
 
       function autoIsiKelas() {
-        var pilihan = document.getElementById('inputPencarianSiswa').value;
-        for (var i = 0; i < dataSiswaGlobal.length; i++) {
-          if ((dataSiswaGlobal[i].nis + " - " + dataSiswaGlobal[i].nama) === pilihan) {
-            document.getElementById('inputKelas').value = dataSiswaGlobal[i].kelas;
-            break;
-          }
-        }
+        let val = document.getElementById('inputPencarianSiswa').value;
+        let s = dataSiswaGlobal.find(x => (x.nis + " - " + x.nama) === val);
+        if(s) document.getElementById('inputKelas').value = s.kelas;
       }
 
       function simpanNilai() {
-        var namaSiswa = document.getElementById('inputPencarianSiswa').value.trim();
-        var kelas = document.getElementById('inputKelas').value.trim();
-        var karakter = document.getElementById('inputKarakter').value;
-        var nilai = document.getElementById('inputNilai').value;
-        if(namaSiswa === "" || kelas === "" || karakter === "" || nilai === "") {
-          alert("Lengkapi data!"); return;
-        }
-        document.getElementById('pesanGuru').innerText = "Menyimpan...";
-        panggilAPI({ action: 'simpanDataKarakter', kelas: kelas, namaSiswa: namaSiswa, karakter: karakter, nilai: nilai, namaGuru: dataLoginSekarang.nama }, setelahSimpan);
+        let payload = {
+          action: 'simpanDataKarakter',
+          kelas: document.getElementById('inputKelas').value,
+          namaSiswa: document.getElementById('inputPencarianSiswa').value,
+          karakter: document.getElementById('inputKarakter').value,
+          nilai: document.getElementById('inputNilai').value,
+          namaGuru: dataLoginSekarang.nama
+        };
+        panggilAPI(payload, r => alert("Berhasil disimpan & Notif WA dikirim!"));
       }
 
-      function setelahSimpan(hasilObj) {
-        if(hasilObj.status === 'Sukses') {
-          document.getElementById('pesanGuru').innerText = "Berhasil Disimpan!";
-          document.getElementById('inputKarakter').value = "";
-          document.getElementById('inputNilai').value = "";
-          panggilAPI({ action: 'getLeaderboard' }, function(res) { tampilkanLeaderboard(res.data); });
-        }
+      async function loadAgenda() {
+        let cont = document.getElementById('list-agenda');
+        panggilAPI({ action: 'getAgenda' }, res => {
+          cont.innerHTML = "";
+          if(!res.data || res.data.length === 0) cont.innerHTML = "Belum ada agenda.";
+          res.data.forEach(a => {
+            cont.innerHTML += `<div class="card-agenda"><strong>${a.tanggal}</strong><br>${a.kegiatan}<br><small>${a.ket}</small></div>`;
+          });
+        });
+      }
+
+      function loadLeaderboard() {
+        panggilAPI({ action: 'getLeaderboard' }, res => {
+          let cont = document.getElementById('listLeaderboard');
+          cont.innerHTML = "";
+          res.data.forEach((d, i) => {
+            cont.innerHTML += `<div class="peringkat-item ${i<3?'juara-1':''}"><span>${i+1}. ${d.nama}</span><span>⭐ ${parseFloat(d.rata).toFixed(2)}</span></div>`;
+          });
+        });
       }
 
       function lihatRaporGuru() {
-        var pilihan = document.getElementById('inputPencarianSiswa').value.trim();
-        var kelas = document.getElementById('inputKelas').value.trim();
-        if (pilihan === "") return;
-        var nis = pilihan.split(" - ")[0].trim();
-        namaSiswaSedangDilihat = pilihan.split(" - ")[1].trim(); 
+        let val = document.getElementById('inputPencarianSiswa').value;
+        let nis = val.split(" - ")[0];
+        let kls = document.getElementById('inputKelas').value;
         document.getElementById('areaRapor').classList.remove('hidden');
-        panggilAPI({ action: 'getNilaiSiswa', kelas: kelas, nis: nis }, renderGrafik);
+        panggilAPI({ action: 'getNilaiSiswa', kelas: kls, nis: nis }, renderGrafik);
       }
 
       function lihatRaporSiswaWali() {
         document.getElementById('areaRapor').classList.remove('hidden');
-        namaSiswaSedangDilihat = dataLoginSekarang.nama;
-        var nis = (dataLoginSekarang.role === 'Wali') ? dataLoginSekarang.username.replace(/W-/i, '') : dataLoginSekarang.username;
+        let nis = dataLoginSekarang.username.replace("W-","");
         panggilAPI({ action: 'getNilaiSiswa', kelas: dataLoginSekarang.kelas, nis: nis }, renderGrafik);
       }
 
       function renderGrafik(hasil) {
-        if(hasil.status === 'Gagal' || hasil.data.length === 0) {
-          document.getElementById('pesanRapor').innerText = "Data tidak ditemukan.";
-          if(grafikSaya) grafikSaya.destroy(); return;
-        }
-        var dataNilai = hasil.data;
-        var bobot = { "Sangat Baik": 4, "Baik": 3, "Cukup": 2, "Perlu Bimbingan": 1 };
-        var total = { "Kedisiplinan": {skor:0, count:0}, "Kejujuran": {skor:0, count:0}, "Tanggung Jawab": {skor:0, count:0}, "Sopan Santun": {skor:0, count:0} };
-        var htmlTabel = "<table><tr><th>Tanggal</th><th>Karakter</th><th>Predikat</th></tr>";
-
-        dataNilai.forEach(item => {
-          if(total[item.karakter]) {
-            total[item.karakter].skor += bobot[item.predikat];
-            total[item.karakter].count++;
-          }
-          htmlTabel += `<tr><td>${item.tanggal}</td><td>${item.karakter}</td><td>${item.predikat}</td></tr>`;
-        });
-        document.getElementById('tempatTabel').innerHTML = htmlTabel + "</table>";
-
-        var labelKarakter = ['Kedisiplinan', 'Kejujuran', 'Tanggung Jawab', 'Sopan Santun'];
-        var rataRata = labelKarakter.map(k => total[k].count > 0 ? total[k].skor / total[k].count : 0);
-
-        var ctx = document.getElementById('grafikKarakter').getContext('2d');
+        let ctx = document.getElementById('grafikKarakter').getContext('2d');
         if(grafikSaya) grafikSaya.destroy();
+        
+        let labelKarakter = ['Kedisiplinan', 'Kejujuran', 'Tanggung Jawab', 'Sopan Santun'];
+        let skor = [0,0,0,0];
+        // Logika hitung rata-rata sederhana
+        labelKarakter.forEach((k, i) => {
+           let filter = hasil.data.filter(x => x.karakter === k);
+           if(filter.length > 0) {
+             let bobot = {"Sangat Baik":4, "Baik":3, "Cukup":2, "Perlu Bimbingan":1};
+             let sum = filter.reduce((a, b) => a + bobot[b.predikat], 0);
+             skor[i] = sum / filter.length;
+           }
+        });
+
         grafikSaya = new Chart(ctx, {
-          type: 'bar',
+          type: 'radar',
           data: {
             labels: labelKarakter,
-            datasets: [{ label: 'Rata-rata', data: rataRata, backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'] }]
+            datasets: [{ label: 'Skor Karakter', data: skor, backgroundColor: 'rgba(76, 175, 80, 0.2)', borderColor: '#4CAF50' }]
           },
-          options: { scales: { y: { beginAtZero: true, max: 4 } } }
+          options: { scales: { r: { suggestMin: 0, suggestMax: 4 } } }
         });
+        
+        let h = "<table><tr><th>Tgl</th><th>Karakter</th><th>Nilai</th></tr>";
+        hasil.data.forEach(d => h += `<tr><td>${d.tanggal}</td><td>${d.karakter}</td><td>${d.predikat}</td></tr>`);
+        document.getElementById('tempatTabel').innerHTML = h + "</table>";
+      }
+
+      function toggleTema() {
+        document.body.classList.toggle("dark-mode");
       }
 
       function downloadPDF() {
-        var elemen = document.getElementById('kontenRapor');
-        var opt = { margin: 0.5, filename: 'Rapor_'+namaSiswaSedangDilihat+'.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-        html2pdf().set(opt).from(elemen).save();
-      }
-
-      function keluar() {
-        window.location.reload();
+        html2pdf().from(document.getElementById('kontenRapor')).save();
       }
     </script>
-  </body>
+</body>
 </html>
