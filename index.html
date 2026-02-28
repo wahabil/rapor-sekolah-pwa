@@ -135,20 +135,39 @@
         </section>
 
         <nav id="navbar" class="bottom-nav hidden">
-            <div class="nav-item active" onclick="navKe('home', this)">
-                <i class="fas fa-home"></i><span>Beranda</span>
-            </div>
-            <div class="nav-item" onclick="navKe('agenda', this)">
-                <i class="fas fa-calendar-day"></i><span>Agenda</span>
-            </div>
-            <div class="nav-item" onclick="navKe('leaderboard', this)">
-                <i class="fas fa-award"></i><span>Rank</span>
-            </div>
-            <div class="nav-item" onclick="toggleTema()">
-                <i class="fas fa-adjust"></i><span>Tema</span>
-            </div>
-        </nav>
+    <div class="nav-item active" onclick="navKe('home', this)">
+        <i class="fas fa-home"></i><span>Beranda</span>
     </div>
+    <div class="nav-item" onclick="navKe('agenda', this)">
+        <i class="fas fa-calendar-day"></i><span>Agenda</span>
+    </div>
+    <div class="nav-item" onclick="navKe('leaderboard', this)">
+        <i class="fas fa-award"></i><span>Rank</span>
+    </div>
+    <div class="nav-item" onclick="prosesLogout()" style="color: #f44336;">
+        <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
+    </div>
+</nav>
+
+<script>
+  // Fungsi logout yang lebih smooth
+  function prosesLogout() {
+    if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
+      window.location.reload();
+    }
+  }
+
+  // Sisanya tetap sama, hanya hapus button class="btn-logout" di HTML
+</script>
+
+<style>
+  /* Tambahan sedikit agar navigasi lebih manis */
+  .nav-item:last-child {
+    border-left: 1px solid #eee;
+  }
+  /* Hapus padding bottom yang berlebih jika tombol logout di tengah sudah hilang */
+  .btn-logout { display: none; } 
+</style>    </div>
 
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"; 
