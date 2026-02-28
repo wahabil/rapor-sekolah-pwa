@@ -3,58 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rapor Karakter PWA - SDI Hidayatul Islamiyah</title>
+    <title>Rapor Karakter PWA</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-      /* --- BASE STYLE --- */
-      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 80px; transition: 0.3s; }
+      /* --- VARIABEL & RESET --- */
+      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 80px; }
       .hidden { display: none !important; }
-      
-      /* --- KOP SEKOLAH (TETAP DI ATAS) --- */
-      .kop-sekolah { max-width: 450px; width: 92%; margin: 10px auto; background: white; border-radius: 10px; border-top: 5px solid #4CAF50; display: flex; align-items: center; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); box-sizing: border-box; }
-      .kop-logo { width: 65px; height: auto; margin-right: 12px; }
-      .kop-teks { text-align: center; flex: 1; }
-      .kop-yayasan { font-size: 10px; font-weight: bold; color: #777; margin: 0; letter-spacing: 1px; }
-      .kop-nama { font-size: 15px; font-weight: bold; color: #2c3e50; margin: 3px 0; line-height: 1.2; }
-      .kop-alamat { font-size: 9px; color: #666; margin: 0; line-height: 1.3; }
 
-      /* --- CONTAINER UTAMA --- */
-      .container { max-width: 450px; width: 92%; margin: 0 auto 15px auto; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 15px; box-sizing: border-box; }
-      
-      /* --- DASHBOARD ELEMENTS --- */
-      .greeting-box { background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; }
-      .greeting-box h2 { margin: 0; font-size: 17px; }
-      .greeting-box p { margin: 5px 0 0 0; font-size: 12px; opacity: 0.9; }
+      /* --- KOP SEKOLAH STATIS (DI ATAS) --- */
+      .kop-sekolah { max-width: 450px; width: 92%; margin: 15px auto 10px auto; background: white; border-radius: 10px; border-top: 5px solid #4CAF50; display: flex; align-items: center; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); box-sizing: border-box; }
+      .kop-logo { width: 70px; height: auto; margin-right: 15px; }
+      .kop-teks { flex: 1; text-align: center; }
+      .kop-yayasan { font-size: 11px; font-weight: bold; color: #777; letter-spacing: 1.5px; margin: 0; }
+      .kop-nama { font-size: 17px; font-weight: bold; color: #2c3e50; margin: 5px 0; line-height: 1.2; }
+      .kop-alamat { font-size: 10px; color: #666; margin: 5px 0 2px 0; line-height: 1.3; }
+      .kop-kontak { font-size: 10px; color: #0066cc; margin: 0; }
 
-      /* --- FORM & BUTTONS --- */
-      input, select, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
-      button { background-color: #4CAF50; color: white; border: none; font-weight: bold; cursor: pointer; }
-      .btn-secondary { background-color: #2196F3; }
+      /* --- CONTAINER KONTEN --- */
+      .container { max-width: 450px; width: 92%; margin: 0 auto 15px auto; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 20px; box-sizing: border-box; text-align: center; }
+      
+      /* --- FORM INPUTS --- */
+      input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
+      button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; }
+      .btn-secondary { background-color: #9C27B0; }
       .btn-pdf { background-color: #E91E63; }
       .btn-logout { background-color: #f44336; margin-top: 15px; }
 
-      /* --- TABEL --- */
-      table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-      th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
-      th { background-color: #4CAF50; color: white; }
+      /* --- GREETING & CARDS --- */
+      .greeting-box { background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
+      .card-agenda { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #4CAF50; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+      .peringkat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 13px; }
 
       /* --- BOTTOM NAV --- */
-      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: #95a5a6; font-size: 11px; cursor: pointer; }
       .nav-item i { font-size: 20px; margin-bottom: 3px; }
       .nav-item.active { color: #4CAF50; font-weight: bold; }
 
-      /* --- CARDS --- */
-      .card-agenda { background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #4CAF50; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; }
-      .peringkat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
-      
+      /* --- TABLE --- */
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background-color: #4CAF50; color: white; }
+
       /* --- DARK MODE --- */
       body.dark-mode { background-color: #121212; color: #e0e0e0; }
-      body.dark-mode .kop-sekolah, body.dark-mode .container, body.dark-mode .bottom-nav, body.dark-mode .card-agenda { background-color: #1e1e1e; color: #eee; border-color: #333; }
-      body.dark-mode input, body.dark-mode select { background-color: #2c2c2c; color: white; border-color: #444; }
+      body.dark-mode .kop-sekolah, body.dark-mode .container, body.dark-mode .bottom-nav, body.dark-mode .card-agenda { background-color: #1e1e1e; border-color: #444; color: #eee; }
+      body.dark-mode input, body.dark-mode select { background-color: #333; color: white; border-color: #555; }
       body.dark-mode .kop-nama { color: #81c784; }
     </style>
 </head>
@@ -65,30 +63,33 @@
       <div class="kop-teks">
         <p class="kop-yayasan">YAYASAN NURUL IHSAN</p>
         <h1 class="kop-nama">SD ISLAM HIDAYATUL<br>ISLAMIYAH</h1>
-        <p class="kop-alamat">Pondok Ranggon, Cipayung, Jakarta Timur</p>
+        <p class="kop-alamat">Jl. Sapi Perah Rt 003/02, Pondok Ranggon, Cipayung, Jakarta Timur</p>
+        <p class="kop-kontak">www.sdihidayatulislamiyah.sch.id</p>
       </div>
     </div>
 
     <div id="loginPage" class="container">
-        <h3 style="margin-top: 0;">Login Aplikasi</h3>
-        <input type="text" id="username" placeholder="NIS / NIP">
-        <input type="password" id="password" placeholder="Password">
+        <h2 style="margin-top: 0;">Login Aplikasi</h2>
+        <input type="text" id="username" placeholder="Masukkan Username (NIS/NIP)">
+        <input type="password" id="password" placeholder="Masukkan Password">
         <button onclick="prosesLogin()">Masuk</button>
-        <p id="pesan" style="color:red; font-size: 12px;"></p>
+        <p id="pesan" style="color: #ff5252; font-size: 14px;"></p>
     </div>
 
     <div id="dashboardPage" class="hidden">
         
         <section id="sec-home" class="container">
             <div class="greeting-box">
-                <h2 id="judulRole">Halo!</h2>
+                <h2 id="judulRole">Selamat Datang!</h2>
                 <p id="tahunAjarDisplay"></p>
             </div>
 
             <div id="menuGuru" class="hidden">
-                <input list="listSiswa" id="inputPencarianSiswa" placeholder="Cari Siswa..." onchange="autoIsiKelas()">
+                <h4 style="color: #4CAF50; margin: 0 0 10px 0;">Menu Input Guru</h4>
+                <input list="listSiswa" id="inputPencarianSiswa" placeholder="1. Cari NIS/Nama Siswa..." onchange="autoIsiKelas()">
                 <datalist id="listSiswa"></datalist>
-                <input type="text" id="inputKelas" placeholder="Kelas" readonly style="background:#f0f0f0; color:#555;">
+                <input type="text" id="inputKelas" placeholder="Kelas (Otomatis)" readonly style="background:#eee;">
+                
                 <select id="inputKarakter">
                     <option value="">-- Pilih Karakter --</option>
                     <option value="Kedisiplinan">Kedisiplinan</option>
@@ -104,45 +105,44 @@
                     <option value="Perlu Bimbingan">Perlu Bimbingan</option>
                 </select>
                 <button onclick="simpanNilai()">Simpan & Kirim WA</button>
-                <button onclick="lihatRaporGuru()" class="btn-secondary">Lihat Grafik Siswa</button>
+                <button onclick="lihatRaporGuru()" class="btn-secondary">Lihat Rapor Siswa</button>
             </div>
 
             <div id="menuSiswaWali" class="hidden">
-                <button onclick="lihatRaporSiswaWali()" class="btn-secondary" style="padding: 20px;">📊 CEK RAPOR KARAKTER SAYA</button>
+                <button onclick="lihatRaporSiswaWali()" class="btn-secondary" style="height: 60px; font-size: 16px;">📊 CEK RAPOR SAYA</button>
             </div>
 
             <div id="areaRapor" class="hidden">
                 <hr>
                 <div id="kontenRapor">
-                    <h4 id="namaSiswaRapor">Grafik Siswa</h4>
                     <canvas id="grafikKarakter"></canvas>
                     <div id="tempatTabel" style="overflow-x:auto;"></div>
                 </div>
                 <button onclick="downloadPDF()" class="btn-pdf">📄 Download PDF</button>
             </div>
-            
-            <button onclick="window.location.reload()" class="btn-logout">Keluar</button>
+
+            <button onclick="window.location.reload()" class="btn-logout">Keluar Aplikasi</button>
         </section>
 
         <section id="sec-agenda" class="container hidden">
-            <h3 style="text-align: left;"><i class="fas fa-calendar-alt" style="color:#4CAF50"></i> Agenda Sekolah</h3>
+            <h3 style="text-align: left; color:#4CAF50;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
             <div id="list-agenda">Memuat agenda...</div>
         </section>
 
         <section id="sec-leaderboard" class="container hidden">
-            <h3 style="text-align: left;"><i class="fas fa-award" style="color:#F57C00"></i> Top 5 Karakter Terbaik</h3>
-            <div id="listLeaderboard">Memuat data...</div>
+            <h3 style="text-align: left; color:#F57C00;"><i class="fas fa-trophy"></i> Top 5 Karakter Terbaik</h3>
+            <div id="listLeaderboard">Memuat data peringkat...</div>
         </section>
 
-        <nav class="bottom-nav">
+        <nav id="navbar" class="bottom-nav hidden">
             <div class="nav-item active" onclick="navKe('home', this)">
-                <i class="fas fa-home"></i><span>Home</span>
+                <i class="fas fa-home"></i><span>Beranda</span>
             </div>
             <div class="nav-item" onclick="navKe('agenda', this)">
                 <i class="fas fa-calendar-day"></i><span>Agenda</span>
             </div>
             <div class="nav-item" onclick="navKe('leaderboard', this)">
-                <i class="fas fa-trophy"></i><span>Rank</span>
+                <i class="fas fa-award"></i><span>Rank</span>
             </div>
             <div class="nav-item" onclick="toggleTema()">
                 <i class="fas fa-adjust"></i><span>Tema</span>
@@ -173,14 +173,15 @@
       function prosesLogin() {
         let u = document.getElementById('username').value;
         let p = document.getElementById('password').value;
-        document.getElementById('pesan').innerText = "Loading...";
+        document.getElementById('pesan').innerText = "Sedang Masuk...";
         panggilAPI({ action: 'cekLogin', username: u, password: p }, res => {
           if(res.status === 'Gagal') {
-             document.getElementById('pesan').innerText = "User/Pass Salah!";
+             document.getElementById('pesan').innerText = "Username/Password Salah!";
           } else {
              dataLoginSekarang = { username: u, ...res };
              document.getElementById('loginPage').classList.add('hidden');
              document.getElementById('dashboardPage').classList.remove('hidden');
+             document.getElementById('navbar').classList.remove('hidden');
              document.getElementById('judulRole').innerText = "Halo, " + res.nama;
              document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (res.tahun || "-");
              if(res.role === 'Guru') {
@@ -196,6 +197,7 @@
       function siapkanDaftarSiswa(data) {
         dataSiswaGlobal = data;
         let dl = document.getElementById('listSiswa');
+        dl.innerHTML = "";
         data.forEach(s => {
           let opt = document.createElement('option');
           opt.value = s.nis + " - " + s.nama;
@@ -210,16 +212,14 @@
       }
 
       function simpanNilai() {
-        let nSiswa = document.getElementById('inputPencarianSiswa').value;
-        if(!nSiswa) return alert("Pilih Siswa!");
         panggilAPI({
           action: 'simpanDataKarakter',
           kelas: document.getElementById('inputKelas').value,
-          namaSiswa: nSiswa,
+          namaSiswa: document.getElementById('inputPencarianSiswa').value,
           karakter: document.getElementById('inputKarakter').value,
           nilai: document.getElementById('inputNilai').value,
           namaGuru: dataLoginSekarang.nama
-        }, r => alert("Tersimpan & WA Terkirim!"));
+        }, r => alert("Data Tersimpan & WhatsApp Terkirim!"));
       }
 
       function loadAgenda() {
@@ -275,7 +275,7 @@
           data: { labels: labels, datasets: [{ label: 'Rata-rata Nilai', data: skor, backgroundColor: '#4CAF50' }] },
           options: { scales: { y: { beginAtZero: true, max: 4 } } }
         });
-        let h = "<table><tr><th>Tgl</th><th>Karakter</th><th>Predikat</th></tr>";
+        let h = "<table><tr><th>Tgl</th><th>Karakter</th><th>Nilai</th></tr>";
         hasil.data.forEach(d => h += `<tr><td>${d.tanggal}</td><td>${d.karakter}</td><td>${d.predikat}</td></tr>`);
         document.getElementById('tempatTabel').innerHTML = h + "</table>";
       }
