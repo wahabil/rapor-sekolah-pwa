@@ -7,6 +7,15 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "e96a4234-01bf-4729-b0ec-ca813d552360",
+        });
+      });
+    </script>
     
     <style>
       /* --- VARIABEL & RESET --- */
@@ -105,7 +114,7 @@
       
       <div class="greeting-box">
         <h2 id="judulRole">Selamat Datang!</h2>
-        <p>Semoga harimu menyenangkan. Ini adalah halaman dasbor Anda.</p>
+        <p id="tahunAjarDisplay" style="font-weight: bold; opacity: 0.9;"></p>
       </div>
 
       <div id="leaderboardBox" class="leaderboard-box hidden">
@@ -163,9 +172,6 @@
     </div>
 
     <script>
-      // =========================================================================
-      // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT KAMU!
-      // =========================================================================
       const API_URL = "https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"; 
 
       var dataSiswaGlobal = []; 
@@ -173,7 +179,6 @@
       var grafikSaya = null; 
       var namaSiswaSedangDilihat = ""; 
 
-      // FUNGSI JEMBATAN PENGHUBUNG VERCEL -> GOOGLE
       function panggilAPI(payload, callbackSukses) {
         fetch(API_URL, {
           method: 'POST',
@@ -205,12 +210,10 @@
         var user = document.getElementById('username').value;
         var pass = document.getElementById('password').value;
         document.getElementById('pesan').innerText = "Mengecek data di server...";
-        
-        // Menggunakan fetch via panggilAPI
         panggilAPI({ action: 'cekLogin', username: user, password: pass }, setelahLogin);
       }
 
-function setelahLogin(dataUser) {
+      function setelahLogin(dataUser) {
         if (dataUser.status === 'Gagal') {
           document.getElementById('pesan').innerText = "Username atau Password salah!";
         } else {
@@ -221,31 +224,29 @@ function setelahLogin(dataUser) {
             nama: dataUser.nama 
           };
 
-          // --- JURUS NOTIFIKASI: Daftarkan ID User ke OneSignal ---
-          // Kita pakai username (NIS/NIP) sebagai ID unik di OneSignal
+          // --- NOTIFIKASI ONESIGNAL ---
           if (window.OneSignalDeferred) {
-            window.OneSignalDeferred.push(async function(OneSignal) {
+            OneSignalDeferred.push(async function(OneSignal) {
               await OneSignal.login(dataLoginSekarang.username);
-              console.log("OneSignal: Terdaftar sebagai " + dataLoginSekarang.username);
+              console.log("OneSignal: Login sebagai " + dataLoginSekarang.username);
             });
           }
-          // -------------------------------------------------------
 
           document.getElementById('loginPage').classList.add('hidden');
           document.getElementById('dashboardPage').classList.remove('hidden');
           
           var sapaan = "Halo, " + dataUser.nama + " (" + dataUser.role + ")";
           if (dataUser.kelas !== "" && dataUser.role !== "Guru") sapaan += " - Kelas " + dataUser.kelas;
+          
           document.getElementById('judulRole').innerText = sapaan;
+          // TAMPILKAN TAHUN PELAJARAN DARI GS
+          document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (dataUser.tahun || "-");
           
           document.getElementById('leaderboardBox').classList.remove('hidden');
-          
-          // Meminta data leaderboard via API
           panggilAPI({ action: 'getLeaderboard' }, function(res) { tampilkanLeaderboard(res.data); });
 
           if(dataUser.role === 'Guru') {
             document.getElementById('menuGuru').classList.remove('hidden');
-            // Meminta daftar siswa via API
             panggilAPI({ action: 'getDaftarSiswa' }, function(res) { siapkanDaftarSiswa(res.data); });
           } else {
             document.getElementById('menuSiswaWali').classList.remove('hidden');
@@ -259,11 +260,9 @@ function setelahLogin(dataUser) {
           wadah.innerHTML = '<p style="font-size: 12px; color: #888;">Belum ada data nilai karakter untuk saat ini.</p>';
           return;
         }
-
         var html = '';
         var medali = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
         var kelasJuara = ['juara-1', 'juara-2', 'juara-3', '', ''];
-
         for (var i = 0; i < dataTop.length; i++) {
           var m = medali[i] || (i+1);
           var c = kelasJuara[i] || '';
@@ -292,8 +291,6 @@ function setelahLogin(dataUser) {
             break;
           }
         }
-        document.getElementById('pesanGuru').innerText = "";
-        document.getElementById('areaRapor').classList.add('hidden');
       }
 
       function simpanNilai() {
@@ -301,242 +298,81 @@ function setelahLogin(dataUser) {
         var kelas = document.getElementById('inputKelas').value.trim();
         var karakter = document.getElementById('inputKarakter').value;
         var nilai = document.getElementById('inputNilai').value;
-        var namaGuru = dataLoginSekarang.nama; 
-        
         if(namaSiswa === "" || kelas === "" || karakter === "" || nilai === "") {
-          document.getElementById('pesanGuru').innerText = "Mohon lengkapi data untuk menyimpan nilai!";
-          document.getElementById('pesanGuru').style.color = "#ff5252";
-          return;
+          alert("Lengkapi data!"); return;
         }
-        document.getElementById('pesanGuru').innerText = "Menyimpan data ke server...";
-        document.getElementById('pesanGuru').style.color = "#2196F3";
-        
-        // Simpan nilai via API
-        var payload = { action: 'simpanDataKarakter', kelas: kelas, namaSiswa: namaSiswa, karakter: karakter, nilai: nilai, namaGuru: namaGuru };
-        panggilAPI(payload, setelahSimpan);
+        document.getElementById('pesanGuru').innerText = "Menyimpan...";
+        panggilAPI({ action: 'simpanDataKarakter', kelas: kelas, namaSiswa: namaSiswa, karakter: karakter, nilai: nilai, namaGuru: dataLoginSekarang.nama }, setelahSimpan);
       }
 
       function setelahSimpan(hasilObj) {
         if(hasilObj.status === 'Sukses') {
-          document.getElementById('pesanGuru').innerText = "Nilai berhasil disimpan!";
-          document.getElementById('pesanGuru').style.color = "#4CAF50";
+          document.getElementById('pesanGuru').innerText = "Berhasil Disimpan!";
           document.getElementById('inputKarakter').value = "";
           document.getElementById('inputNilai').value = "";
-          
-          // Refresh leaderboard via API
           panggilAPI({ action: 'getLeaderboard' }, function(res) { tampilkanLeaderboard(res.data); });
-        } else {
-          document.getElementById('pesanGuru').innerText = "Gagal menyimpan!";
-          document.getElementById('pesanGuru').style.color = "#ff5252";
         }
       }
 
       function lihatRaporGuru() {
-        var pilihanSiswa = document.getElementById('inputPencarianSiswa').value.trim();
+        var pilihan = document.getElementById('inputPencarianSiswa').value.trim();
         var kelas = document.getElementById('inputKelas').value.trim();
-
-        if (pilihanSiswa === "" || kelas === "") {
-          document.getElementById('pesanGuru').innerText = "Silakan cari dan pilih siswa terlebih dahulu!";
-          document.getElementById('pesanGuru').style.color = "#ff5252";
-          return;
-        }
-
-        document.getElementById('pesanGuru').innerText = ""; 
-        var nis = pilihanSiswa.split(" - ")[0].trim();
-        namaSiswaSedangDilihat = pilihanSiswa.split(" - ")[1].trim(); 
-
+        if (pilihan === "") return;
+        var nis = pilihan.split(" - ")[0].trim();
+        namaSiswaSedangDilihat = pilihan.split(" - ")[1].trim(); 
         document.getElementById('areaRapor').classList.remove('hidden');
-        document.getElementById('pesanRapor').innerText = "Sedang mengambil data nilai untuk " + namaSiswaSedangDilihat + "...";
-        document.getElementById('tempatTabel').innerHTML = "";
-        
-        // Ambil data nilai via API
         panggilAPI({ action: 'getNilaiSiswa', kelas: kelas, nis: nis }, renderGrafik);
       }
 
       function lihatRaporSiswaWali() {
         document.getElementById('areaRapor').classList.remove('hidden');
-        namaSiswaSedangDilihat = dataLoginSekarang.nama; 
-        document.getElementById('pesanRapor').innerText = "Rapor Karakter: " + namaSiswaSedangDilihat;
-        document.getElementById('tempatTabel').innerHTML = "";
-        
-        var kelas = dataLoginSekarang.kelas;
-        var nis = dataLoginSekarang.username;
-        if(dataLoginSekarang.role === 'Wali') nis = nis.replace(/W-/i, ''); 
-
-        // Ambil data nilai via API
-        panggilAPI({ action: 'getNilaiSiswa', kelas: kelas, nis: nis }, renderGrafik);
+        namaSiswaSedangDilihat = dataLoginSekarang.nama;
+        var nis = (dataLoginSekarang.role === 'Wali') ? dataLoginSekarang.username.replace(/W-/i, '') : dataLoginSekarang.username;
+        panggilAPI({ action: 'getNilaiSiswa', kelas: dataLoginSekarang.kelas, nis: nis }, renderGrafik);
       }
 
       function renderGrafik(hasil) {
-        if(hasil.status === 'Gagal') {
-          document.getElementById('pesanRapor').innerText = hasil.pesan;
-          document.getElementById('pesanRapor').style.color = "#ff5252";
-          document.getElementById('btnDownloadPDF').classList.add('hidden'); 
-          return;
+        if(hasil.status === 'Gagal' || hasil.data.length === 0) {
+          document.getElementById('pesanRapor').innerText = "Data tidak ditemukan.";
+          if(grafikSaya) grafikSaya.destroy(); return;
         }
-
         var dataNilai = hasil.data;
-        if(dataNilai.length === 0) {
-          document.getElementById('pesanRapor').innerText = "Belum ada nilai yang diinput.";
-          document.getElementById('pesanRapor').style.color = "#FF9800";
-          document.getElementById('btnDownloadPDF').classList.add('hidden'); 
-          if(grafikSaya) grafikSaya.destroy();
-          return;
-        }
-
-        document.getElementById('btnDownloadPDF').classList.remove('hidden');
-        document.getElementById('pesanRapor').style.color = "#4CAF50";
-
         var bobot = { "Sangat Baik": 4, "Baik": 3, "Cukup": 2, "Perlu Bimbingan": 1 };
         var total = { "Kedisiplinan": {skor:0, count:0}, "Kejujuran": {skor:0, count:0}, "Tanggung Jawab": {skor:0, count:0}, "Sopan Santun": {skor:0, count:0} };
-
         var htmlTabel = "<table><tr><th>Tanggal</th><th>Karakter</th><th>Predikat</th></tr>";
 
-        for(var i=0; i < dataNilai.length; i++) {
-          var kar = dataNilai[i].karakter;
-          var pred = dataNilai[i].predikat;
-          
-          if(total[kar] && bobot[pred]) {
-            total[kar].skor += bobot[pred];
-            total[kar].count += 1;
+        dataNilai.forEach(item => {
+          if(total[item.karakter]) {
+            total[item.karakter].skor += bobot[item.predikat];
+            total[item.karakter].count++;
           }
-          htmlTabel += "<tr><td>"+dataNilai[i].tanggal+"</td><td>"+kar+"</td><td>"+pred+"</td></tr>";
-        }
-        htmlTabel += "</table>";
-        document.getElementById('tempatTabel').innerHTML = htmlTabel;
+          htmlTabel += `<tr><td>${item.tanggal}</td><td>${item.karakter}</td><td>${item.predikat}</td></tr>`;
+        });
+        document.getElementById('tempatTabel').innerHTML = htmlTabel + "</table>";
 
         var labelKarakter = ['Kedisiplinan', 'Kejujuran', 'Tanggung Jawab', 'Sopan Santun'];
-        var rataRata = [];
-
-        for(var j=0; j < labelKarakter.length; j++) {
-          var k = labelKarakter[j];
-          if(total[k].count > 0) rataRata.push(total[k].skor / total[k].count);
-          else rataRata.push(0); 
-        }
+        var rataRata = labelKarakter.map(k => total[k].count > 0 ? total[k].skor / total[k].count : 0);
 
         var ctx = document.getElementById('grafikKarakter').getContext('2d');
-        if(grafikSaya) grafikSaya.destroy(); 
-        
+        if(grafikSaya) grafikSaya.destroy();
         grafikSaya = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: labelKarakter,
-            datasets: [{
-              label: 'Rata-rata Nilai Karakter',
-              data: rataRata,
-              backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'],
-              borderWidth: 1
-            }]
+            datasets: [{ label: 'Rata-rata', data: rataRata, backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'] }]
           },
-          options: {
-            scales: {
-              y: { 
-                beginAtZero: true, 
-                max: 4,
-                ticks: {
-                  stepSize: 1,
-                  callback: function(value) {
-                    if(value === 4) return 'Sgt Baik';
-                    if(value === 3) return 'Baik';
-                    if(value === 2) return 'Cukup';
-                    if(value === 1) return 'Bimbingan';
-                    return '';
-                  }
-                }
-              }
-            }
-          }
+          options: { scales: { y: { beginAtZero: true, max: 4 } } }
         });
       }
 
       function downloadPDF() {
         var elemen = document.getElementById('kontenRapor');
-        var tabel = document.getElementById('tempatTabel');
-        var btn = document.getElementById('btnDownloadPDF');
-        var canvas = document.getElementById('grafikKarakter');
-        
-        window.scrollTo(0, 0);
-
-        var styleAsliMaxHeight = tabel.style.maxHeight;
-        var styleAsliOverflow = tabel.style.overflowY;
-        tabel.style.maxHeight = 'none';
-        tabel.style.overflowY = 'visible';
-
-        var styleAsliBg = elemen.style.backgroundColor;
-        var styleAsliColor = elemen.style.color;
-        elemen.style.backgroundColor = '#ffffff';
-        elemen.style.color = '#000000';
-        elemen.style.padding = '20px';
-
-        var imgData = canvas.toDataURL("image/png", 1.0);
-        var imgTiruan = document.createElement('img');
-        imgTiruan.src = imgData;
-        imgTiruan.id = 'grafikTiruan';
-        imgTiruan.style.maxWidth = '100%';
-        imgTiruan.style.height = 'auto';
-        imgTiruan.style.margin = '0 auto';
-        imgTiruan.style.display = 'block';
-        
-        canvas.style.display = 'none';
-        canvas.parentNode.insertBefore(imgTiruan, canvas);
-
-        btn.innerText = "⏳ Memproses PDF...";
-        
-        var namaFile = 'Rapor_Karakter_' + (namaSiswaSedangDilihat ? namaSiswaSedangDilihat.replace(/\s+/g, '_') : 'Siswa') + '.pdf';
-        
-        var opt = {
-          margin:       0.5,
-          filename:     namaFile,
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(elemen).save().then(function() {
-          btn.innerText = "📄 Download Rapor (PDF)";
-          tabel.style.maxHeight = styleAsliMaxHeight;
-          tabel.style.overflowY = styleAsliOverflow;
-          elemen.style.backgroundColor = styleAsliBg;
-          elemen.style.color = styleAsliColor;
-          elemen.style.padding = '';
-          
-          var hapusImg = document.getElementById('grafikTiruan');
-          if (hapusImg) hapusImg.parentNode.removeChild(hapusImg);
-          canvas.style.display = 'block';
-        });
+        var opt = { margin: 0.5, filename: 'Rapor_'+namaSiswaSedangDilihat+'.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+        html2pdf().set(opt).from(elemen).save();
       }
-      
+
       function keluar() {
-        try {
-          document.getElementById('dashboardPage').classList.add('hidden');
-          document.getElementById('menuGuru').classList.add('hidden');
-          document.getElementById('menuSiswaWali').classList.add('hidden');
-          document.getElementById('areaRapor').classList.add('hidden');
-          document.getElementById('leaderboardBox').classList.add('hidden');
-          
-          document.getElementById('loginPage').classList.remove('hidden');
-          
-          document.getElementById('username').value = "";
-          document.getElementById('password').value = "";
-          document.getElementById('pesan').innerText = "";
-          document.getElementById('inputPencarianSiswa').value = "";
-          document.getElementById('inputKelas').value = "";
-          document.getElementById('pesanGuru').innerText = "";
-          
-          if (grafikSaya !== null) {
-            grafikSaya.destroy();
-            grafikSaya = null; 
-          }
-
-          dataLoginSekarang = {};
-          namaSiswaSedangDilihat = "";
-
-          window.scrollTo(0, 0);
-
-        } catch (error) {
-          console.error("Terjadi kemacetan saat logout, memaksa refresh...", error);
-          window.location.reload(); 
-        }
+        window.location.reload();
       }
     </script>
   </body>
