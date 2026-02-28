@@ -31,7 +31,6 @@
       button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; }
       .btn-secondary { background-color: #9C27B0; }
       .btn-pdf { background-color: #E91E63; }
-      .btn-logout { background-color: #f44336; margin-top: 15px; }
 
       /* --- GREETING & CARDS --- */
       .greeting-box { background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
@@ -43,6 +42,7 @@
       .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: #95a5a6; font-size: 11px; cursor: pointer; }
       .nav-item i { font-size: 20px; margin-bottom: 3px; }
       .nav-item.active { color: #4CAF50; font-weight: bold; }
+      .nav-item:last-child { border-left: 1px solid #eee; } /* Garis pemisah untuk tombol Keluar */
 
       /* --- TABLE --- */
       table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
@@ -120,9 +120,8 @@
                 </div>
                 <button onclick="downloadPDF()" class="btn-pdf">📄 Download PDF</button>
             </div>
-
-            <button onclick="window.location.reload()" class="btn-logout">Keluar Aplikasi</button>
-        </section>
+            
+            </section>
 
         <section id="sec-agenda" class="container hidden">
             <h3 style="text-align: left; color:#4CAF50;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
@@ -135,39 +134,20 @@
         </section>
 
         <nav id="navbar" class="bottom-nav hidden">
-    <div class="nav-item active" onclick="navKe('home', this)">
-        <i class="fas fa-home"></i><span>Beranda</span>
+            <div class="nav-item active" onclick="navKe('home', this)">
+                <i class="fas fa-home"></i><span>Beranda</span>
+            </div>
+            <div class="nav-item" onclick="navKe('agenda', this)">
+                <i class="fas fa-calendar-day"></i><span>Agenda</span>
+            </div>
+            <div class="nav-item" onclick="navKe('leaderboard', this)">
+                <i class="fas fa-award"></i><span>Rank</span>
+            </div>
+            <div class="nav-item" onclick="prosesLogout()" style="color: #f44336;">
+                <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
+            </div>
+        </nav>
     </div>
-    <div class="nav-item" onclick="navKe('agenda', this)">
-        <i class="fas fa-calendar-day"></i><span>Agenda</span>
-    </div>
-    <div class="nav-item" onclick="navKe('leaderboard', this)">
-        <i class="fas fa-award"></i><span>Rank</span>
-    </div>
-    <div class="nav-item" onclick="prosesLogout()" style="color: #f44336;">
-        <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
-    </div>
-</nav>
-
-<script>
-  // Fungsi logout yang lebih smooth
-  function prosesLogout() {
-    if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
-      window.location.reload();
-    }
-  }
-
-  // Sisanya tetap sama, hanya hapus button class="btn-logout" di HTML
-</script>
-
-<style>
-  /* Tambahan sedikit agar navigasi lebih manis */
-  .nav-item:last-child {
-    border-left: 1px solid #eee;
-  }
-  /* Hapus padding bottom yang berlebih jika tombol logout di tengah sudah hilang */
-  .btn-logout { display: none; } 
-</style>    </div>
 
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"; 
@@ -301,6 +281,12 @@
 
       function toggleTema() { document.body.classList.toggle("dark-mode"); }
       function downloadPDF() { html2pdf().from(document.getElementById('kontenRapor')).save(); }
+
+      function prosesLogout() {
+        if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
+          window.location.reload();
+        }
+      }
     </script>
 </body>
 </html>
