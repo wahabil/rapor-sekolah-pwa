@@ -2,7 +2,7 @@
   "name": "Rapor Karakter SD Islam Hidayatul Islamiyah",
   "short_name": "Rapor Karakter",
   "description": "Aplikasi Penilaian Karakter Siswa",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f4f7f6",
   "theme_color": "#4CAF50",
