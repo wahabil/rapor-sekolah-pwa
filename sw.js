@@ -6,7 +6,7 @@ const urlsToCache = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
-  'https://url.hidis.id/logo/hidis.png'
+  'hidis.png'
 ];
 
 // Install Service Worker & Simpan Cache
