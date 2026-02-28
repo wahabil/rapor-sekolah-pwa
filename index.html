@@ -280,28 +280,55 @@
       }
 
       function toggleTema() { document.body.classList.toggle("dark-mode"); }
-      function downloadPDF() { 
+      function downloadPDF() {
         let element = document.getElementById('kontenRapor');
+        let btn = document.querySelector('.btn-pdf');
+        let canvas = document.getElementById('grafikKarakter');
         
-        // 1. Amankan warna background & teks biar gak zonk saat diprint
-        element.style.backgroundColor = "#ffffff";
-        element.style.padding = "20px";
-        element.style.color = "#000000";
+        // Ubah teks tombol biar keren ada loadingnya
+        btn.innerText = "⏳ Sedang Memproses...";
+        
+        // 1. Trik Sulap: Ubah Canvas jadi Gambar (Base64)
+        let imgData = canvas.toDataURL('image/png', 1.0);
+        let imgTemp = document.createElement('img');
+        imgTemp.src = imgData;
+        imgTemp.style.width = "100%"; // Sesuaikan ukuran
+        imgTemp.id = "imgChartTemp";
+        
+        // 2. Sembunyikan canvas asli, masukkan gambar tiruan
+        canvas.style.display = "none";
+        canvas.parentNode.insertBefore(imgTemp, canvas);
 
-        // 2. Konfigurasi PDF supaya HD dan mendukung grafik (Canvas)
+        // 3. Paskan warna background agar teks tidak tembus/hilang di PDF
+        let originalBg = element.style.backgroundColor;
+        let originalColor = element.style.color;
+        element.style.backgroundColor = "#ffffff";
+        element.style.color = "#000000";
+        element.style.padding = "15px";
+
+        // 4. Proses cetak PDF HD
         let opt = {
           margin:       0.5,
           filename:     'Rapor_Karakter_Siswa.pdf',
           image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true, logging: false }, // Scale 2 bikin HD
-          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+          html2canvas:  { scale: 2, useCORS: true },
+          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
 
-        // 3. Proses konversi ke PDF, lalu kembalikan style seperti semula
         html2pdf().set(opt).from(element).save().then(() => {
-          element.style.backgroundColor = "";
+          // 5. Setelah selesai didownload, kembalikan semuanya ke bentuk semula
+          document.getElementById('imgChartTemp').remove(); // Hapus gambar tiruan
+          canvas.style.display = "block"; // Munculkan canvas lagi
+          
+          element.style.backgroundColor = originalBg;
+          element.style.color = originalColor;
           element.style.padding = "";
-          element.style.color = "";
+          
+          btn.innerText = "📄 Download PDF"; // Kembalikan teks tombol
+        }).catch(err => {
+          console.error(err);
+          alert("Gagal mencetak PDF. Silakan coba lagi.");
+          btn.innerText = "📄 Download PDF";
         });
       }
       function prosesLogout() {
