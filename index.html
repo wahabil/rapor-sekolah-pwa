@@ -280,56 +280,52 @@
       }
 
       function toggleTema() { document.body.classList.toggle("dark-mode"); }
-      function downloadPDF() {
-        let element = document.getElementById('kontenRapor');
+ function downloadPDF() {
         let btn = document.querySelector('.btn-pdf');
-        let canvas = document.getElementById('grafikKarakter');
-        
-        // Ubah teks tombol biar keren ada loadingnya
+        // Ganti teks dulu
         btn.innerText = "⏳ Sedang Memproses...";
         
-        // 1. Trik Sulap: Ubah Canvas jadi Gambar (Base64)
-        let imgData = canvas.toDataURL('image/png', 1.0);
-        let imgTemp = document.createElement('img');
-        imgTemp.src = imgData;
-        imgTemp.style.width = "100%"; // Sesuaikan ukuran
-        imgTemp.id = "imgChartTemp";
-        
-        // 2. Sembunyikan canvas asli, masukkan gambar tiruan
-        canvas.style.display = "none";
-        canvas.parentNode.insertBefore(imgTemp, canvas);
-
-        // 3. Paskan warna background agar teks tidak tembus/hilang di PDF
-        let originalBg = element.style.backgroundColor;
-        let originalColor = element.style.color;
-        element.style.backgroundColor = "#ffffff";
-        element.style.color = "#000000";
-        element.style.padding = "15px";
-
-        // 4. Proses cetak PDF HD
-        let opt = {
-          margin:       0.5,
-          filename:     'Rapor_Karakter_Siswa.pdf',
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true },
-          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-          // 5. Setelah selesai didownload, kembalikan semuanya ke bentuk semula
-          document.getElementById('imgChartTemp').remove(); // Hapus gambar tiruan
-          canvas.style.display = "block"; // Munculkan canvas lagi
+        // Kasih jeda 100 milidetik agar layar sempat update tulisan tombol
+        setTimeout(() => {
+          let element = document.getElementById('kontenRapor');
+          let canvas = document.getElementById('grafikKarakter');
           
-          element.style.backgroundColor = originalBg;
-          element.style.color = originalColor;
-          element.style.padding = "";
+          let imgData = canvas.toDataURL('image/png', 1.0);
+          let imgTemp = document.createElement('img');
+          imgTemp.src = imgData;
+          imgTemp.style.width = "100%";
+          imgTemp.id = "imgChartTemp";
           
-          btn.innerText = "📄 Download PDF"; // Kembalikan teks tombol
-        }).catch(err => {
-          console.error(err);
-          alert("Gagal mencetak PDF. Silakan coba lagi.");
-          btn.innerText = "📄 Download PDF";
-        });
+          canvas.style.display = "none";
+          canvas.parentNode.insertBefore(imgTemp, canvas);
+
+          let originalBg = element.style.backgroundColor;
+          let originalColor = element.style.color;
+          element.style.backgroundColor = "#ffffff";
+          element.style.color = "#000000";
+          element.style.padding = "15px";
+
+          let opt = {
+            margin:       0.5,
+            filename:     'Rapor_Karakter_Siswa.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+          };
+
+          html2pdf().set(opt).from(element).save().then(() => {
+            document.getElementById('imgChartTemp').remove();
+            canvas.style.display = "block"; 
+            element.style.backgroundColor = originalBg;
+            element.style.color = originalColor;
+            element.style.padding = "";
+            btn.innerText = "📄 Download PDF"; 
+          }).catch(err => {
+            console.error(err);
+            alert("Gagal mencetak PDF.");
+            btn.innerText = "📄 Download PDF";
+          });
+        }, 100); // <-- INI KUNCI RAHASIANYA (Jeda 100ms)
       }
       function prosesLogout() {
         if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
