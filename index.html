@@ -283,35 +283,38 @@
 function downloadPDF() {
         let btn = document.querySelector('.btn-pdf');
         btn.innerText = "⏳ Sedang Memproses...";
-        
-        // Kasih jeda biar tombol sempat berubah tulisannya
+
         setTimeout(() => {
-          // 1. BIKIN KERTAS VIRTUAL (Hanya untuk PDF)
-          let printArea = document.createElement('div');
-          printArea.style.padding = "20px";
-          printArea.style.backgroundColor = "#ffffff";
-          printArea.style.color = "#000000";
-          printArea.style.width = "800px"; // Ukuran ideal kertas A4 di browser
+          let konten = document.getElementById('kontenRapor');
           
-          // 2. KLONING KOP SEKOLAH BIAYA MASUK PDF
+          // 1. Amankan warna asli biar bisa dikembalikan nanti
+          let originalBg = konten.style.backgroundColor;
+          let originalPadding = konten.style.padding;
+          
+          // Paksa background putih biar teks kebaca di PDF
+          konten.style.backgroundColor = "#ffffff";
+          konten.style.padding = "20px";
+          konten.style.color = "#000000";
+
+          // 2. Pinjam Kop Sekolah sebentar
           let kopAsli = document.querySelector('.kop-sekolah');
           let kopClone = kopAsli.cloneNode(true);
-          kopClone.style.boxShadow = "none"; // Hilangkan bayangan biar rapi
-          kopClone.style.maxWidth = "100%";
-          kopClone.style.margin = "0 0 20px 0";
-          printArea.appendChild(kopClone);
+          kopClone.id = "kopSementara";
+          kopClone.style.boxShadow = "none";
+          kopClone.style.border = "1px solid #ddd";
+          kopClone.style.marginBottom = "20px";
           
-          // 3. TAMBAHKAN NAMA & KELAS SISWA (Biar tahu ini rapor siapa)
-          // Cek apakah yang login Guru atau Siswa
+          // 3. Buat Biodata Siswa
           let namaSiswa = document.getElementById('inputPencarianSiswa') && document.getElementById('inputPencarianSiswa').value 
                           ? document.getElementById('inputPencarianSiswa').value.split(" - ")[1] || document.getElementById('inputPencarianSiswa').value
                           : dataLoginSekarang.nama;
-                          
+          
           let kelasSiswa = document.getElementById('inputKelas') && document.getElementById('inputKelas').value 
                            ? document.getElementById('inputKelas').value 
                            : dataLoginSekarang.kelas;
-          
+
           let infoSiswa = document.createElement('div');
+          infoSiswa.id = "infoSementara";
           infoSiswa.innerHTML = `
               <h3 style="text-align:center; margin-bottom:5px; color:#333;">LAPORAN PENILAIAN KARAKTER</h3>
               <p style="text-align:center; margin-top:0; font-size:15px; color:#555;">
@@ -319,36 +322,25 @@ function downloadPDF() {
               </p>
               <hr style="margin-bottom:20px; border: 0; border-top: 1px solid #ddd;">
           `;
-          printArea.appendChild(infoSiswa);
 
-          // 4. UBAH GRAFIK JADI GAMBAR ANTI ZONK
+          // 4. Masukkan Kop dan Biodata ke PALING ATAS area rapor
+          konten.insertBefore(infoSiswa, konten.firstChild);
+          konten.insertBefore(kopClone, konten.firstChild);
+
+          // 5. Trik Canvas ke Gambar biar grafik muncul
           let canvas = document.getElementById('grafikKarakter');
-          let imgData = canvas.toDataURL('image/png', 1.0);
-          let imgElement = document.createElement('img');
-          imgElement.src = imgData;
-          imgElement.style.width = "100%";
-          imgElement.style.maxWidth = "600px"; // Biar grafik gak kegedean
-          imgElement.style.display = "block";
-          imgElement.style.margin = "0 auto 30px auto";
-          printArea.appendChild(imgElement);
+          let imgTemp = document.createElement('img');
+          imgTemp.id = "gambarCanvasSementara";
+          imgTemp.src = canvas.toDataURL('image/png', 1.0);
+          imgTemp.style.width = "100%";
+          imgTemp.style.maxWidth = "500px";
+          imgTemp.style.display = "block";
+          imgTemp.style.margin = "0 auto 20px auto";
+          
+          canvas.style.display = "none"; // Sembunyikan canvas asli
+          canvas.parentNode.insertBefore(imgTemp, canvas);
 
-          // 5. KLONING TABEL NILAI
-          let tabelAsli = document.getElementById('tempatTabel');
-          let tabelClone = tabelAsli.cloneNode(true);
-          // Rapikan tabel untuk cetak
-          let tableTag = tabelClone.querySelector('table');
-          if(tableTag) {
-              tableTag.style.width = "100%";
-              tableTag.style.borderCollapse = "collapse";
-          }
-          printArea.appendChild(tabelClone);
-
-          // Sembunyikan kertas virtual ini dari layar HP (buang ke pojok kiri jauh)
-          printArea.style.position = "absolute";
-          printArea.style.left = "-9999px";
-          document.body.appendChild(printArea);
-
-          // 6. PROSES JADI PDF A4 PORTRAIT
+          // 6. Cetak ke PDF
           let opt = {
             margin:       0.4,
             filename:     `Rapor_Karakter_${namaSiswa || 'Siswa'}.pdf`,
@@ -357,18 +349,27 @@ function downloadPDF() {
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
           };
 
-          html2pdf().set(opt).from(printArea).save().then(() => {
-            // Bersihkan sisa kertas virtual setelah selesai download
-            document.body.removeChild(printArea);
-            btn.innerText = "📄 Download PDF"; 
+          html2pdf().set(opt).from(konten).save().then(() => {
+            // 7. BERSIH-BERSIH (Kembalikan seperti semula)
+            document.getElementById('kopSementara').remove();
+            document.getElementById('infoSementara').remove();
+            document.getElementById('gambarCanvasSementara').remove();
+            
+            canvas.style.display = "block"; // Munculkan grafik lagi
+            konten.style.backgroundColor = originalBg;
+            konten.style.padding = originalPadding;
+            konten.style.color = "";
+            
+            btn.innerText = "📄 Download PDF";
           }).catch(err => {
             console.error(err);
-            alert("Gagal mencetak PDF. Coba lagi ya Bos.");
-            document.body.removeChild(printArea);
+            alert("Terjadi kesalahan saat membuat PDF.");
             btn.innerText = "📄 Download PDF";
           });
-        }, 300); // Jeda 300ms agar rendering sempurna
-      }      function prosesLogout() {
+
+        }, 300); // Kasih jeda napas sedikit
+      }      
+        function prosesLogout() {
         if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
           window.location.reload();
         }
