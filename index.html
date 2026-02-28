@@ -280,8 +280,30 @@
       }
 
       function toggleTema() { document.body.classList.toggle("dark-mode"); }
-      function downloadPDF() { html2pdf().from(document.getElementById('kontenRapor')).save(); }
+      function downloadPDF() { 
+        let element = document.getElementById('kontenRapor');
+        
+        // 1. Amankan warna background & teks biar gak zonk saat diprint
+        element.style.backgroundColor = "#ffffff";
+        element.style.padding = "20px";
+        element.style.color = "#000000";
 
+        // 2. Konfigurasi PDF supaya HD dan mendukung grafik (Canvas)
+        let opt = {
+          margin:       0.5,
+          filename:     'Rapor_Karakter_Siswa.pdf',
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, logging: false }, // Scale 2 bikin HD
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        // 3. Proses konversi ke PDF, lalu kembalikan style seperti semula
+        html2pdf().set(opt).from(element).save().then(() => {
+          element.style.backgroundColor = "";
+          element.style.padding = "";
+          element.style.color = "";
+        });
+      }
       function prosesLogout() {
         if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
           window.location.reload();
