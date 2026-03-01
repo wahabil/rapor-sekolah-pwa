@@ -1,292 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rapor Karakter PWA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapor Karakter - SDI Hidayatul Islamiyah</title>
+    
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <style>
-      /* --- VARIABEL & RESET --- */
-      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 80px; }
-      .hidden { display: none !important; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        
+        /* Form Login */
+        #halamanLogin { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 50px; text-align: center; }
+        .input-grup { margin-bottom: 15px; text-align: left; }
+        .input-grup input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; width: 100%; font-weight: bold; }
+        .btn-utama { background-color: #4CAF50; }
+        .btn-danger { background-color: #f44336; margin-top: 10px; }
+        .btn-pdf { background-color: #2196F3; margin-top: 20px; }
+        
+        /* Dashboard & Navbar */
+        #halamanDashboard { display: none; }
+        .navbar { background-color: #4CAF50; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px;}
+        
+        /* Kop Sekolah (Disembunyikan di layar, muncul di PDF) */
+        .kop-sekolah { display: none; text-align: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Tabel */
+        .tempat-tabel { overflow-x: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
 
-      /* --- KOP SEKOLAH STATIS (DI ATAS) --- */
-      .kop-sekolah { max-width: 450px; width: 92%; margin: 15px auto 10px auto; background: white; border-radius: 10px; border-top: 5px solid #4CAF50; display: flex; align-items: center; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); box-sizing: border-box; }
-      .kop-logo { width: 70px; height: auto; margin-right: 15px; }
-      .kop-teks { flex: 1; text-align: center; }
-      .kop-yayasan { font-size: 11px; font-weight: bold; color: #777; letter-spacing: 1.5px; margin: 0; }
-      .kop-nama { font-size: 17px; font-weight: bold; color: #2c3e50; margin: 5px 0; line-height: 1.2; }
-      .kop-alamat { font-size: 10px; color: #666; margin: 5px 0 2px 0; line-height: 1.3; }
-      .kop-kontak { font-size: 10px; color: #0066cc; margin: 0; }
-
-      /* --- CONTAINER KONTEN --- */
-      .container { max-width: 450px; width: 92%; margin: 0 auto 15px auto; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 20px; box-sizing: border-box; text-align: center; }
-      
-      /* --- FORM INPUTS --- */
-      input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
-      button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; }
-      .btn-secondary { background-color: #9C27B0; }
-      .btn-pdf { background-color: #E91E63; }
-
-      /* --- GREETING & CARDS --- */
-      .greeting-box { background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
-      .card-agenda { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #4CAF50; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-      .peringkat-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 13px; }
-
-      /* --- BOTTOM NAV --- */
-      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-      .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: #95a5a6; font-size: 11px; cursor: pointer; }
-      .nav-item i { font-size: 20px; margin-bottom: 3px; }
-      .nav-item.active { color: #4CAF50; font-weight: bold; }
-      .nav-item:last-child { border-left: 1px solid #eee; } /* Garis pemisah untuk tombol Keluar */
-
-      /* --- TABLE --- */
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-      th { background-color: #4CAF50; color: white; }
-
-      /* --- DARK MODE --- */
-      body.dark-mode { background-color: #121212; color: #e0e0e0; }
-      body.dark-mode .kop-sekolah, body.dark-mode .container, body.dark-mode .bottom-nav, body.dark-mode .card-agenda { background-color: #1e1e1e; border-color: #444; color: #eee; }
-      body.dark-mode input, body.dark-mode select { background-color: #333; color: white; border-color: #555; }
-      body.dark-mode .kop-nama { color: #81c784; }
+        /* Agenda Card */
+        .agenda-card { background: white; padding: 15px; border-left: 5px solid #ff9800; border-radius: 5px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .agenda-tgl { font-weight: bold; color: #ff9800; font-size: 0.9em; }
+        .agenda-kegiatan { font-size: 1.1em; margin: 5px 0; }
+        .agenda-ket { color: #666; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <div class="kop-sekolah">
-      <img src="hidis.png" alt="Logo" class="kop-logo">
-      <div class="kop-teks">
-        <p class="kop-yayasan">YAYASAN NURUL IHSAN</p>
-        <h1 class="kop-nama">SD ISLAM HIDAYATUL<br>ISLAMIYAH</h1>
-        <p class="kop-alamat">Jl. Sapi Perah Rt 003/02, Pondok Ranggon, Cipayung, Jakarta Timur</p>
-        <p class="kop-kontak">www.sdihidayatulislamiyah.sch.id</p>
-      </div>
+<div class="container">
+    <div id="halamanLogin">
+        <img src="https://url.hidis.id/logo/hidis.png" alt="Logo Sekolah" width="100">
+        <h2>Sistem Rapor Karakter</h2>
+        <div class="input-grup">
+            <label>Username (NIS/NIP):</label>
+            <input type="text" id="username" placeholder="Masukkan Username">
+        </div>
+        <div class="input-grup">
+            <label>Password:</label>
+            <input type="password" id="password" placeholder="Masukkan Password">
+        </div>
+        <button class="btn btn-utama" onclick="prosesLogin()" id="btnLogin">🔑 Login</button>
     </div>
 
-    <div id="loginPage" class="container">
-        <h2 style="margin-top: 0;">Login Aplikasi</h2>
-        <input type="text" id="username" placeholder="Masukkan Username (NIS/NIP)">
-        <input type="password" id="password" placeholder="Masukkan Password">
-        <button onclick="prosesLogin()">Masuk</button>
-        <p id="pesan" style="color: #ff5252; font-size: 14px;"></p>
-    </div>
+    <div id="halamanDashboard">
+        <div class="navbar">
+            <div>
+                <strong>Halo, <span id="namaUser">Siswa</span></strong><br>
+                <small>Role: <span id="roleUser">-</span></small>
+            </div>
+            <button class="btn btn-danger" style="width: auto; margin:0;" onclick="prosesLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+        </div>
 
-    <div id="dashboardPage" class="hidden">
+        <h3 style="color: #333;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
+        <div id="tempatAgenda">
+            <p>Memuat agenda...</p>
+        </div>
+
+        <h3 style="color: #333; margin-top: 30px;"><i class="fas fa-chart-bar"></i> Laporan Karakter</h3>
         
-        <section id="sec-home" class="container">
-            <div class="greeting-box">
-                <h2 id="judulRole">Selamat Datang!</h2>
-                <p id="tahunAjarDisplay"></p>
+        <div id="kontenRapor">
+            <div class="kop-sekolah">
+                <h2 style="margin: 0;">SD ISLAM HIDAYATUL ISLAMIYAH</h2>
+                <p style="margin: 5px 0 0 0; font-size: 14px;">Jl. Contoh No. 123, Tulungagung, Jawa Timur</p>
             </div>
 
-            <div id="menuGuru" class="hidden">
-                <h4 style="color: #4CAF50; margin: 0 0 10px 0;">Menu Input Guru</h4>
-                <input list="listSiswa" id="inputPencarianSiswa" placeholder="1. Cari NIS/Nama Siswa..." onchange="autoIsiKelas()">
-                <datalist id="listSiswa"></datalist>
-                <input type="text" id="inputKelas" placeholder="Kelas (Otomatis)" readonly style="background:#eee;">
-                
-                <select id="inputKarakter">
-                    <option value="">-- Pilih Karakter --</option>
-                    <option value="Kedisiplinan">Kedisiplinan</option>
-                    <option value="Kejujuran">Kejujuran</option>
-                    <option value="Tanggung Jawab">Tanggung Jawab</option>
-                    <option value="Sopan Santun">Sopan Santun</option>
-                </select>
-                <select id="inputNilai">
-                    <option value="">-- Pilih Predikat --</option>
-                    <option value="Sangat Baik">Sangat Baik</option>
-                    <option value="Baik">Baik</option>
-                    <option value="Cukup">Cukup</option>
-                    <option value="Perlu Bimbingan">Perlu Bimbingan</option>
-                </select>
-                <button onclick="simpanNilai()">Simpan & Kirim WA</button>
-                <button onclick="lihatRaporGuru()" class="btn-secondary">Lihat Rapor Siswa</button>
-            </div>
+            <canvas id="grafikKarakter" style="max-height: 250px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></canvas>
 
-            <div id="menuSiswaWali" class="hidden">
-                <button onclick="lihatRaporSiswaWali()" class="btn-secondary" style="height: 60px; font-size: 16px;">📊 CEK RAPOR SAYA</button>
+            <div class="tempat-tabel" id="tempatTabel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Karakter</th>
+                            <th>Predikat</th>
+                            <th>Guru</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTabelRiwayat">
+                        <tr><td colspan="4" style="text-align:center;">Memuat data... (Tautkan ke fungsi getNilaiSiswa Bos)</td></tr>
+                    </tbody>
+                </table>
             </div>
+        </div> <button class="btn btn-pdf" onclick="previewPDF()">👁️ Preview & Cetak PDF</button>
 
-            <div id="areaRapor" class="hidden">
-                <hr>
-                <div id="kontenRapor">
-                    <canvas id="grafikKarakter"></canvas>
-                    <div id="tempatTabel" style="overflow-x:auto;"></div>
-                </div>
-                <button onclick="previewPDF()" class="btn-pdf">👁️ Preview PDF</button>
-            </div>
-            
-        </section>
-
-        <section id="sec-agenda" class="container hidden">
-            <h3 style="text-align: left; color:#4CAF50;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
-            <div id="list-agenda">Memuat agenda...</div>
-        </section>
-
-        <section id="sec-leaderboard" class="container hidden">
-            <h3 style="text-align: left; color:#F57C00;"><i class="fas fa-trophy"></i> Top 5 Karakter Terbaik</h3>
-            <div id="listLeaderboard">Memuat data peringkat...</div>
-        </section>
-
-        <nav id="navbar" class="bottom-nav hidden">
-            <div class="nav-item active" onclick="navKe('home', this)">
-                <i class="fas fa-home"></i><span>Beranda</span>
-            </div>
-            <div class="nav-item" onclick="navKe('agenda', this)">
-                <i class="fas fa-calendar-day"></i><span>Agenda</span>
-            </div>
-            <div class="nav-item" onclick="navKe('leaderboard', this)">
-                <i class="fas fa-award"></i><span>Rank</span>
-            </div>
-            <div class="nav-item" onclick="prosesLogout()" style="color: #f44336;">
-                <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
-            </div>
-        </nav>
     </div>
+</div>
 
-    <script>
-      const API_URL = "https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"; 
-      var dataSiswaGlobal = []; 
-      var dataLoginSekarang = {}; 
-      var grafikSaya = null;
+<script>
+    // ==================================================
+    // 1. KONFIGURASI API & VARIABEL GLOBAL
+    // ==================================================
+    const API_URL = 'URL_GAS_BOS_DISINI'; // <-- GANTI DENGAN LINK DEPLOY GAS BOS!
+    let dataLoginSekarang = null;
 
-      function navKe(target, el) {
-        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('sec-' + target).classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-        if(target === 'agenda') loadAgenda();
-        if(target === 'leaderboard') loadLeaderboard();
-      }
+    // ==================================================
+    // 2. CEK SESI LOGIN & PWA SERVICE WORKER SAAT DIBUKA
+    // ==================================================
+    window.addEventListener('load', () => {
+        // Cek Local Storage biar gak logout pas direfresh
+        let sesiTersimpan = localStorage.getItem('raporUserSession');
+        if (sesiTersimpan) {
+            dataLoginSekarang = JSON.parse(sesiTersimpan);
+            tampilkanDashboard();
+        }
 
-      function panggilAPI(payload, callback) {
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(r => r.json()).then(res => callback(res)).catch(e => console.log(e));
-      }
+        // Daftar PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker PWA Aktif!', reg.scope))
+                .catch(err => console.error('Service Worker Gagal:', err));
+        }
+    });
 
-      function prosesLogin() {
-        let u = document.getElementById('username').value;
-        let p = document.getElementById('password').value;
-        document.getElementById('pesan').innerText = "Sedang Masuk...";
-        panggilAPI({ action: 'cekLogin', username: u, password: p }, res => {
-          if(res.status === 'Gagal') {
-             document.getElementById('pesan').innerText = "Username/Password Salah!";
-          } else {
-             dataLoginSekarang = { username: u, ...res };
-             document.getElementById('loginPage').classList.add('hidden');
-             document.getElementById('dashboardPage').classList.remove('hidden');
-             document.getElementById('navbar').classList.remove('hidden');
-             document.getElementById('judulRole').innerText = "Halo, " + res.nama;
-             document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (res.tahun || "-");
-             if(res.role === 'Guru') {
-               document.getElementById('menuGuru').classList.remove('hidden');
-               panggilAPI({ action: 'getDaftarSiswa' }, d => siapkanDaftarSiswa(d.data));
-             } else {
-               document.getElementById('menuSiswaWali').classList.remove('hidden');
-             }
-          }
+    // ==================================================
+    // 3. FUNGSI LOGIN & LOGOUT
+    // ==================================================
+    function prosesLogin() {
+        let user = document.getElementById('username').value;
+        let pass = document.getElementById('password').value;
+        let btn = document.getElementById('btnLogin');
+
+        if(!user || !pass) return alert("Isi username dan password!");
+
+        btn.innerText = "⏳ Sedang Login...";
+        btn.disabled = true;
+
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'cekLogin', username: user, password: pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'Sukses') {
+                dataLoginSekarang = data;
+                // Simpan ke Local Storage
+                localStorage.setItem('raporUserSession', JSON.stringify(data));
+                tampilkanDashboard();
+            } else {
+                alert("Username atau Password Salah!");
+            }
+        })
+        .catch(err => {
+            alert("Gagal koneksi ke server!");
+            console.error(err);
+        })
+        .finally(() => {
+            btn.innerText = "🔑 Login";
+            btn.disabled = false;
         });
-      }
+    }
 
-      function siapkanDaftarSiswa(data) {
-        dataSiswaGlobal = data;
-        let dl = document.getElementById('listSiswa');
-        dl.innerHTML = "";
-        data.forEach(s => {
-          let opt = document.createElement('option');
-          opt.value = s.nis + " - " + s.nama;
-          dl.appendChild(opt);
+    function prosesLogout() {
+        if(confirm("Yakin ingin keluar?")) {
+            localStorage.removeItem('raporUserSession');
+            dataLoginSekarang = null;
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('halamanDashboard').style.display = 'none';
+            document.getElementById('halamanLogin').style.display = 'block';
+        }
+    }
+
+    function tampilkanDashboard() {
+        document.getElementById('halamanLogin').style.display = 'none';
+        document.getElementById('halamanDashboard').style.display = 'block';
+        
+        document.getElementById('namaUser').innerText = dataLoginSekarang.nama;
+        document.getElementById('roleUser').innerText = dataLoginSekarang.role;
+
+        // Panggil fungsi-fungsi pengisi data
+        loadAgenda();
+        // loadNilaiSiswa(); <-- Panggil fungsi tarik nilai tabel & chart di sini nanti
+    }
+
+    // ==================================================
+    // 4. FUNGSI TARIK DATA AGENDA
+    // ==================================================
+    function loadAgenda() {
+        let tempatAgenda = document.getElementById('tempatAgenda');
+        tempatAgenda.innerHTML = "<p>⏳ Mengambil data agenda...</p>";
+
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getAgenda' })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if(response.status === 'Sukses' && response.data.length > 0) {
+                let html = "";
+                response.data.forEach(item => {
+                    html += `
+                    <div class="agenda-card">
+                        <div class="agenda-tgl"><i class="far fa-clock"></i> ${item.tanggal}</div>
+                        <h4 class="agenda-kegiatan">${item.kegiatan}</h4>
+                        <div class="agenda-ket">${item.ket}</div>
+                    </div>`;
+                });
+                tempatAgenda.innerHTML = html;
+            } else {
+                tempatAgenda.innerHTML = "<p><i>Belum ada agenda dalam waktu dekat.</i></p>";
+            }
+        })
+        .catch(err => {
+            tempatAgenda.innerHTML = "<p style='color:red;'>Gagal memuat agenda.</p>";
+            console.error(err);
         });
-      }
+    }
 
-      function autoIsiKelas() {
-        let val = document.getElementById('inputPencarianSiswa').value;
-        let s = dataSiswaGlobal.find(x => (x.nis + " - " + x.nama) === val);
-        if(s) document.getElementById('inputKelas').value = s.kelas;
-      }
-
-      function simpanNilai() {
-        panggilAPI({
-          action: 'simpanDataKarakter',
-          kelas: document.getElementById('inputKelas').value,
-          namaSiswa: document.getElementById('inputPencarianSiswa').value,
-          karakter: document.getElementById('inputKarakter').value,
-          nilai: document.getElementById('inputNilai').value,
-          namaGuru: dataLoginSekarang.nama
-        }, r => alert("Data Tersimpan & WhatsApp Terkirim!"));
-      }
-
-      function loadAgenda() {
-        panggilAPI({ action: 'getAgenda' }, res => {
-          let cont = document.getElementById('list-agenda');
-          cont.innerHTML = "";
-          if(!res.data || res.data.length === 0) cont.innerHTML = "Belum ada agenda.";
-          res.data.forEach(a => {
-            cont.innerHTML += `<div class="card-agenda"><strong>📅 ${a.tanggal}</strong><br><b>${a.kegiatan}</b><br><small>${a.ket}</small></div>`;
-          });
-        });
-      }
-
-      function loadLeaderboard() {
-        panggilAPI({ action: 'getLeaderboard' }, res => {
-          let cont = document.getElementById('listLeaderboard');
-          cont.innerHTML = "";
-          res.data.forEach((d, i) => {
-            let m = (i===0)?'🥇':(i===1)?'🥈':(i===2)?'🥉':(i+1);
-            cont.innerHTML += `<div class="peringkat-item"><span>${m} ${d.nama}</span><span>⭐ ${parseFloat(d.rata).toFixed(2)}</span></div>`;
-          });
-        });
-      }
-
-      function lihatRaporGuru() {
-        let val = document.getElementById('inputPencarianSiswa').value;
-        if(!val) return;
-        let nis = val.split(" - ")[0];
-        document.getElementById('areaRapor').classList.remove('hidden');
-        panggilAPI({ action: 'getNilaiSiswa', kelas: document.getElementById('inputKelas').value, nis: nis }, renderGrafik);
-      }
-
-      function lihatRaporSiswaWali() {
-        document.getElementById('areaRapor').classList.remove('hidden');
-        let nis = dataLoginSekarang.username.replace("W-","");
-        panggilAPI({ action: 'getNilaiSiswa', kelas: dataLoginSekarang.kelas, nis: nis }, renderGrafik);
-      }
-
-      function renderGrafik(hasil) {
-        let ctx = document.getElementById('grafikKarakter').getContext('2d');
-        if(grafikSaya) grafikSaya.destroy();
-        let labels = ['Kedisiplinan', 'Kejujuran', 'Tanggung Jawab', 'Sopan Santun'];
-        let skor = [0,0,0,0];
-        labels.forEach((k, i) => {
-           let f = hasil.data.filter(x => x.karakter === k);
-           if(f.length > 0) {
-             let bobot = {"Sangat Baik":4, "Baik":3, "Cukup":2, "Perlu Bimbingan":1};
-             skor[i] = f.reduce((a, b) => a + bobot[b.predikat], 0) / f.length;
-           }
-        });
-        grafikSaya = new Chart(ctx, {
-          type: 'bar',
-          data: { labels: labels, datasets: [{ label: 'Rata-rata Nilai', data: skor, backgroundColor: '#4CAF50' }] },
-          options: { scales: { y: { beginAtZero: true, max: 4 } } }
-        });
-        let h = "<table><tr><th>Tgl</th><th>Karakter</th><th>Nilai</th></tr>";
-        hasil.data.forEach(d => h += `<tr><td>${d.tanggal}</td><td>${d.karakter}</td><td>${d.predikat}</td></tr>`);
-        document.getElementById('tempatTabel').innerHTML = h + "</table>";
-      }
-
-      function toggleTema() { document.body.classList.toggle("dark-mode"); }
-
-      // --- FUNGSI BARU: PREVIEW PDF ---
-function previewPDF() {
+    // ==================================================
+    // 5. FUNGSI PREVIEW PDF SUPER STABIL
+    // ==================================================
+    function previewPDF() {
         let btn = document.querySelector('.btn-pdf');
         btn.innerText = "⏳ Sedang Memproses...";
 
-        // 1. Munculkan Layar Putih (Overlay) biar transisi gak kelihatan berantakan
+        // Munculkan Layar Putih (Overlay)
         let loadingOverlay = document.createElement('div');
         loadingOverlay.style.position = 'fixed';
         loadingOverlay.style.top = '0'; loadingOverlay.style.left = '0';
@@ -296,58 +244,48 @@ function previewPDF() {
         loadingOverlay.style.display = 'flex';
         loadingOverlay.style.justifyContent = 'center';
         loadingOverlay.style.alignItems = 'center';
-        loadingOverlay.innerHTML = '<h3 style="color:#4CAF50;">⏳ Menyiapkan Dokumen...</h3>';
+        loadingOverlay.innerHTML = '<h3 style="color:#4CAF50;">⏳ Menyiapkan Dokumen PDF...</h3>';
         document.body.appendChild(loadingOverlay);
 
         setTimeout(() => {
           let konten = document.getElementById('kontenRapor');
-          let tabelDiv = document.getElementById('tempatTabel'); // Ambil bungkus tabel
+          let tabelDiv = document.getElementById('tempatTabel'); 
           
-          // 2. Amankan style asli
           let originalBg = konten.style.backgroundColor;
           let originalPadding = konten.style.padding;
-          let originalOverflow = tabelDiv.style.overflowX; // Kunci masalahnya disini
+          let originalOverflow = tabelDiv.style.overflowX; 
           
           konten.style.backgroundColor = "#ffffff";
           konten.style.padding = "20px";
           konten.style.color = "#000000";
-          
-          // MATIKAN OVERFLOW SEMENTARA BIAR TABEL GAK KEPOTONG
-          tabelDiv.style.overflowX = "visible"; 
+          tabelDiv.style.overflowX = "visible"; // Matikan overflow biar tabel full
 
-          // 3. Pinjam Kop Sekolah sebentar
+          // Pinjam Kop Sekolah
           let kopAsli = document.querySelector('.kop-sekolah');
           let kopClone = kopAsli.cloneNode(true);
           kopClone.id = "kopSementara";
+          kopClone.style.display = "block";
           kopClone.style.boxShadow = "none";
-          kopClone.style.border = "1px solid #ddd";
           kopClone.style.marginBottom = "20px";
-          kopClone.style.width = "100%"; // Pastikan lebarnya full
           
-          // 4. Buat Biodata Siswa
-          let namaSiswa = document.getElementById('inputPencarianSiswa') && document.getElementById('inputPencarianSiswa').value 
-                          ? document.getElementById('inputPencarianSiswa').value.split(" - ")[1] || document.getElementById('inputPencarianSiswa').value
-                          : (typeof dataLoginSekarang !== 'undefined' ? dataLoginSekarang.nama : '');
-          
-          let kelasSiswa = document.getElementById('inputKelas') && document.getElementById('inputKelas').value 
-                           ? document.getElementById('inputKelas').value 
-                           : (typeof dataLoginSekarang !== 'undefined' ? dataLoginSekarang.kelas : '');
+          // Buat Biodata Siswa
+          let namaSiswa = dataLoginSekarang ? dataLoginSekarang.nama : 'Siswa';
+          let kelasSiswa = dataLoginSekarang ? dataLoginSekarang.kelas : '-';
 
           let infoSiswa = document.createElement('div');
           infoSiswa.id = "infoSementara";
           infoSiswa.innerHTML = `
               <h3 style="text-align:center; margin-bottom:5px; color:#333;">LAPORAN PENILAIAN KARAKTER</h3>
               <p style="text-align:center; margin-top:0; font-size:15px; color:#555;">
-                  <strong>Nama:</strong> ${namaSiswa || '-'} &nbsp; | &nbsp; <strong>Kelas:</strong> ${kelasSiswa || '-'}
+                  <strong>Nama:</strong> ${namaSiswa} &nbsp; | &nbsp; <strong>Kelas:</strong> ${kelasSiswa}
               </p>
               <hr style="margin-bottom:20px; border: 0; border-top: 1px solid #ddd;">
           `;
 
-          // 5. Masukkan Kop dan Biodata
           konten.insertBefore(infoSiswa, konten.firstChild);
           konten.insertBefore(kopClone, konten.firstChild);
 
-          // 6. Trik Canvas ke Gambar
+          // Render Canvas Chart ke Image biar gak blank
           let canvas = document.getElementById('grafikKarakter');
           let imgTemp = document.createElement('img');
           imgTemp.id = "gambarCanvasSementara";
@@ -360,22 +298,19 @@ function previewPDF() {
           canvas.style.display = "none"; 
           canvas.parentNode.insertBefore(imgTemp, canvas);
 
-          // 7. TUNGGU GAMBAR BENAR-BENAR MUNCUL BARU CETAK PDF
           imgTemp.onload = () => {
               let opt = {
-                margin:       [0.5, 0.4, 0.5, 0.4], // Margin atas, kanan, bawah, kiri
-                filename:     `Rapor_Karakter_${namaSiswa || 'Siswa'}.pdf`,
+                margin:       [0.5, 0.4, 0.5, 0.4],
+                filename:     `Rapor_Karakter_${namaSiswa}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                // Tambahan scrollY: 0 untuk mencegah blank saat posisi di-scroll ke bawah
                 html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
               };
 
               html2pdf().set(opt).from(konten).output('bloburl').then(function(pdfUrl) {
-                
                 window.open(pdfUrl, '_blank');
 
-                // 8. BERSIH-BERSIH DOM
+                // Bersih-bersih DOM ke semula
                 document.getElementById('kopSementara').remove();
                 document.getElementById('infoSementara').remove();
                 document.getElementById('gambarCanvasSementara').remove();
@@ -384,38 +319,359 @@ function previewPDF() {
                 konten.style.backgroundColor = originalBg;
                 konten.style.padding = originalPadding;
                 konten.style.color = "";
-                tabelDiv.style.overflowX = originalOverflow; // Kembalikan overflow tabel
+                tabelDiv.style.overflowX = originalOverflow;
                 
-                document.body.removeChild(loadingOverlay); // Hapus layar loading
-                btn.innerText = "👁️ Preview PDF";
+                document.body.removeChild(loadingOverlay);
+                btn.innerText = "👁️ Preview & Cetak PDF";
                 
               }).catch(err => {
                 console.error(err);
-                alert("Terjadi kesalahan saat membuat preview.");
+                alert("Gagal memproses PDF.");
                 document.body.removeChild(loadingOverlay);
-                btn.innerText = "👁️ Preview PDF";
+                btn.innerText = "👁️ Preview & Cetak PDF";
               });
           };
-
         }, 300);
-      }      
+    }
+</script>
 
-      function prosesLogout() {
-        if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
-          window.location.reload();
-        }
-      }
-    </script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA Service Worker terdaftar, Bos!', reg.scope))
-            .catch(err => console.error('Waduh, Service Worker gagal:', err));
-        });
-      }
-    </script>
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapor Karakter - SDI Hidayatul Islamiyah</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        
+        /* Form Login */
+        #halamanLogin { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 50px; text-align: center; }
+        .input-grup { margin-bottom: 15px; text-align: left; }
+        .input-grup input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; width: 100%; font-weight: bold; }
+        .btn-utama { background-color: #4CAF50; }
+        .btn-danger { background-color: #f44336; margin-top: 10px; }
+        .btn-pdf { background-color: #2196F3; margin-top: 20px; }
+        
+        /* Dashboard & Navbar */
+        #halamanDashboard { display: none; }
+        .navbar { background-color: #4CAF50; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px;}
+        
+        /* Kop Sekolah (Disembunyikan di layar, muncul di PDF) */
+        .kop-sekolah { display: none; text-align: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Tabel */
+        .tempat-tabel { overflow-x: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+
+        /* Agenda Card */
+        .agenda-card { background: white; padding: 15px; border-left: 5px solid #ff9800; border-radius: 5px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .agenda-tgl { font-weight: bold; color: #ff9800; font-size: 0.9em; }
+        .agenda-kegiatan { font-size: 1.1em; margin: 5px 0; }
+        .agenda-ket { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="halamanLogin">
+        <img src="https://url.hidis.id/logo/hidis.png" alt="Logo Sekolah" width="100">
+        <h2>Sistem Rapor Karakter</h2>
+        <div class="input-grup">
+            <label>Username (NIS/NIP):</label>
+            <input type="text" id="username" placeholder="Masukkan Username">
+        </div>
+        <div class="input-grup">
+            <label>Password:</label>
+            <input type="password" id="password" placeholder="Masukkan Password">
+        </div>
+        <button class="btn btn-utama" onclick="prosesLogin()" id="btnLogin">🔑 Login</button>
+    </div>
+
+    <div id="halamanDashboard">
+        <div class="navbar">
+            <div>
+                <strong>Halo, <span id="namaUser">Siswa</span></strong><br>
+                <small>Role: <span id="roleUser">-</span></small>
+            </div>
+            <button class="btn btn-danger" style="width: auto; margin:0;" onclick="prosesLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+        </div>
+
+        <h3 style="color: #333;"><i class="fas fa-calendar-alt"></i> Agenda Sekolah</h3>
+        <div id="tempatAgenda">
+            <p>Memuat agenda...</p>
+        </div>
+
+        <h3 style="color: #333; margin-top: 30px;"><i class="fas fa-chart-bar"></i> Laporan Karakter</h3>
+        
+        <div id="kontenRapor">
+            <div class="kop-sekolah">
+                <h2 style="margin: 0;">SD ISLAM HIDAYATUL ISLAMIYAH</h2>
+                <p style="margin: 5px 0 0 0; font-size: 14px;">Jl. Contoh No. 123, Tulungagung, Jawa Timur</p>
+            </div>
+
+            <canvas id="grafikKarakter" style="max-height: 250px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></canvas>
+
+            <div class="tempat-tabel" id="tempatTabel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Karakter</th>
+                            <th>Predikat</th>
+                            <th>Guru</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyTabelRiwayat">
+                        <tr><td colspan="4" style="text-align:center;">Memuat data... (Tautkan ke fungsi getNilaiSiswa Bos)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> <button class="btn btn-pdf" onclick="previewPDF()">👁️ Preview & Cetak PDF</button>
+
+    </div>
+</div>
+
+<script>
+    // ==================================================
+    // 1. KONFIGURASI API & VARIABEL GLOBAL
+    // ==================================================
+    const API_URL = 'URL_GAS_BOS_DISINI'; // <-- GANTI DENGAN LINK DEPLOY GAS BOS!
+    let dataLoginSekarang = null;
+
+    // ==================================================
+    // 2. CEK SESI LOGIN & PWA SERVICE WORKER SAAT DIBUKA
+    // ==================================================
+    window.addEventListener('load', () => {
+        // Cek Local Storage biar gak logout pas direfresh
+        let sesiTersimpan = localStorage.getItem('raporUserSession');
+        if (sesiTersimpan) {
+            dataLoginSekarang = JSON.parse(sesiTersimpan);
+            tampilkanDashboard();
+        }
+
+        // Daftar PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker PWA Aktif!', reg.scope))
+                .catch(err => console.error('Service Worker Gagal:', err));
+        }
+    });
+
+    // ==================================================
+    // 3. FUNGSI LOGIN & LOGOUT
+    // ==================================================
+    function prosesLogin() {
+        let user = document.getElementById('username').value;
+        let pass = document.getElementById('password').value;
+        let btn = document.getElementById('btnLogin');
+
+        if(!user || !pass) return alert("Isi username dan password!");
+
+        btn.innerText = "⏳ Sedang Login...";
+        btn.disabled = true;
+
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'cekLogin', username: user, password: pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'Sukses') {
+                dataLoginSekarang = data;
+                // Simpan ke Local Storage
+                localStorage.setItem('raporUserSession', JSON.stringify(data));
+                tampilkanDashboard();
+            } else {
+                alert("Username atau Password Salah!");
+            }
+        })
+        .catch(err => {
+            alert("Gagal koneksi ke server!");
+            console.error(err);
+        })
+        .finally(() => {
+            btn.innerText = "🔑 Login";
+            btn.disabled = false;
+        });
+    }
+
+    function prosesLogout() {
+        if(confirm("Yakin ingin keluar?")) {
+            localStorage.removeItem('raporUserSession');
+            dataLoginSekarang = null;
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('halamanDashboard').style.display = 'none';
+            document.getElementById('halamanLogin').style.display = 'block';
+        }
+    }
+
+    function tampilkanDashboard() {
+        document.getElementById('halamanLogin').style.display = 'none';
+        document.getElementById('halamanDashboard').style.display = 'block';
+        
+        document.getElementById('namaUser').innerText = dataLoginSekarang.nama;
+        document.getElementById('roleUser').innerText = dataLoginSekarang.role;
+
+        // Panggil fungsi-fungsi pengisi data
+        loadAgenda();
+        // loadNilaiSiswa(); <-- Panggil fungsi tarik nilai tabel & chart di sini nanti
+    }
+
+    // ==================================================
+    // 4. FUNGSI TARIK DATA AGENDA
+    // ==================================================
+    function loadAgenda() {
+        let tempatAgenda = document.getElementById('tempatAgenda');
+        tempatAgenda.innerHTML = "<p>⏳ Mengambil data agenda...</p>";
+
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getAgenda' })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if(response.status === 'Sukses' && response.data.length > 0) {
+                let html = "";
+                response.data.forEach(item => {
+                    html += `
+                    <div class="agenda-card">
+                        <div class="agenda-tgl"><i class="far fa-clock"></i> ${item.tanggal}</div>
+                        <h4 class="agenda-kegiatan">${item.kegiatan}</h4>
+                        <div class="agenda-ket">${item.ket}</div>
+                    </div>`;
+                });
+                tempatAgenda.innerHTML = html;
+            } else {
+                tempatAgenda.innerHTML = "<p><i>Belum ada agenda dalam waktu dekat.</i></p>";
+            }
+        })
+        .catch(err => {
+            tempatAgenda.innerHTML = "<p style='color:red;'>Gagal memuat agenda.</p>";
+            console.error(err);
+        });
+    }
+
+    // ==================================================
+    // 5. FUNGSI PREVIEW PDF SUPER STABIL
+    // ==================================================
+    function previewPDF() {
+        let btn = document.querySelector('.btn-pdf');
+        btn.innerText = "⏳ Sedang Memproses...";
+
+        // Munculkan Layar Putih (Overlay)
+        let loadingOverlay = document.createElement('div');
+        loadingOverlay.style.position = 'fixed';
+        loadingOverlay.style.top = '0'; loadingOverlay.style.left = '0';
+        loadingOverlay.style.width = '100vw'; loadingOverlay.style.height = '100vh';
+        loadingOverlay.style.backgroundColor = 'rgba(255,255,255,0.95)';
+        loadingOverlay.style.zIndex = '9999';
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.justifyContent = 'center';
+        loadingOverlay.style.alignItems = 'center';
+        loadingOverlay.innerHTML = '<h3 style="color:#4CAF50;">⏳ Menyiapkan Dokumen PDF...</h3>';
+        document.body.appendChild(loadingOverlay);
+
+        setTimeout(() => {
+          let konten = document.getElementById('kontenRapor');
+          let tabelDiv = document.getElementById('tempatTabel'); 
+          
+          let originalBg = konten.style.backgroundColor;
+          let originalPadding = konten.style.padding;
+          let originalOverflow = tabelDiv.style.overflowX; 
+          
+          konten.style.backgroundColor = "#ffffff";
+          konten.style.padding = "20px";
+          konten.style.color = "#000000";
+          tabelDiv.style.overflowX = "visible"; // Matikan overflow biar tabel full
+
+          // Pinjam Kop Sekolah
+          let kopAsli = document.querySelector('.kop-sekolah');
+          let kopClone = kopAsli.cloneNode(true);
+          kopClone.id = "kopSementara";
+          kopClone.style.display = "block";
+          kopClone.style.boxShadow = "none";
+          kopClone.style.marginBottom = "20px";
+          
+          // Buat Biodata Siswa
+          let namaSiswa = dataLoginSekarang ? dataLoginSekarang.nama : 'Siswa';
+          let kelasSiswa = dataLoginSekarang ? dataLoginSekarang.kelas : '-';
+
+          let infoSiswa = document.createElement('div');
+          infoSiswa.id = "infoSementara";
+          infoSiswa.innerHTML = `
+              <h3 style="text-align:center; margin-bottom:5px; color:#333;">LAPORAN PENILAIAN KARAKTER</h3>
+              <p style="text-align:center; margin-top:0; font-size:15px; color:#555;">
+                  <strong>Nama:</strong> ${namaSiswa} &nbsp; | &nbsp; <strong>Kelas:</strong> ${kelasSiswa}
+              </p>
+              <hr style="margin-bottom:20px; border: 0; border-top: 1px solid #ddd;">
+          `;
+
+          konten.insertBefore(infoSiswa, konten.firstChild);
+          konten.insertBefore(kopClone, konten.firstChild);
+
+          // Render Canvas Chart ke Image biar gak blank
+          let canvas = document.getElementById('grafikKarakter');
+          let imgTemp = document.createElement('img');
+          imgTemp.id = "gambarCanvasSementara";
+          imgTemp.src = canvas.toDataURL('image/png', 1.0);
+          imgTemp.style.width = "100%";
+          imgTemp.style.maxWidth = "500px";
+          imgTemp.style.display = "block";
+          imgTemp.style.margin = "0 auto 20px auto";
+          
+          canvas.style.display = "none"; 
+          canvas.parentNode.insertBefore(imgTemp, canvas);
+
+          imgTemp.onload = () => {
+              let opt = {
+                margin:       [0.5, 0.4, 0.5, 0.4],
+                filename:     `Rapor_Karakter_${namaSiswa}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+              };
+
+              html2pdf().set(opt).from(konten).output('bloburl').then(function(pdfUrl) {
+                window.open(pdfUrl, '_blank');
+
+                // Bersih-bersih DOM ke semula
+                document.getElementById('kopSementara').remove();
+                document.getElementById('infoSementara').remove();
+                document.getElementById('gambarCanvasSementara').remove();
+                
+                canvas.style.display = "block"; 
+                konten.style.backgroundColor = originalBg;
+                konten.style.padding = originalPadding;
+                konten.style.color = "";
+                tabelDiv.style.overflowX = originalOverflow;
+                
+                document.body.removeChild(loadingOverlay);
+                btn.innerText = "👁️ Preview & Cetak PDF";
+                
+              }).catch(err => {
+                console.error(err);
+                alert("Gagal memproses PDF.");
+                document.body.removeChild(loadingOverlay);
+                btn.innerText = "👁️ Preview & Cetak PDF";
+              });
+          };
+        }, 300);
+    }
+</script>
+
 </body>
 </html>
