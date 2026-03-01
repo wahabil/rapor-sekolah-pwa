@@ -30,7 +30,8 @@
       
       /* --- FORM INPUTS --- */
       input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
-      button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; }
+      button { background-color: #4CAF50; color: white; cursor: pointer; font-weight: bold; border: none; transition: background 0.3s; }
+      button:active { background-color: #388E3C; }
       .btn-secondary { background-color: #9C27B0; }
       .btn-pdf { background-color: #E91E63; }
 
@@ -51,17 +52,28 @@
       th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
       th { background-color: #4CAF50; color: white; }
 
+      /* --- STYLE KHUSUS HALAMAN LOGIN --- */
+      .divider { display: flex; align-items: center; text-align: center; margin: 15px 0; color: #888; font-size: 12px; }
+      .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
+      .divider:not(:empty)::before { margin-right: .25em; }
+      .divider:not(:empty)::after { margin-left: .25em; }
+      .form-group-manual { text-align: left; margin-bottom: 5px; }
+      .form-group-manual label { font-size: 12px; font-weight: bold; color: #555; margin-left: 5px; }
+
       /* --- DARK MODE --- */
       body.dark-mode { background-color: #121212; color: #e0e0e0; }
       body.dark-mode .kop-sekolah, body.dark-mode .container, body.dark-mode .bottom-nav, body.dark-mode .card-agenda { background-color: #1e1e1e; border-color: #444; color: #eee; }
       body.dark-mode input, body.dark-mode select { background-color: #333; color: white; border-color: #555; }
       body.dark-mode .kop-nama { color: #81c784; }
+      body.dark-mode .divider { color: #aaa; }
+      body.dark-mode .divider::before, body.dark-mode .divider::after { border-bottom-color: #444; }
+      body.dark-mode .form-group-manual label { color: #bbb; }
     </style>
 </head>
 <body>
 
     <div class="kop-sekolah">
-      <img src="hidis.png" alt="Logo" class="kop-logo">
+      <img src="hidis.png" alt="Logo" class="kop-logo" onerror="this.src='https://via.placeholder.com/70?text=Logo'">
       <div class="kop-teks">
         <p class="kop-yayasan">YAYASAN NURUL IHSAN</p>
         <h1 class="kop-nama">SD ISLAM HIDAYATUL<br>ISLAMIYAH</h1>
@@ -69,18 +81,19 @@
         <p class="kop-kontak">www.sdihidayatulislamiyah.sch.id</p>
       </div>
     </div>
-
+    
     <div id="loginPage" class="container">
         <h2 style="margin-top: 0;">Login Aplikasi</h2>
-        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Gunakan akun Google Workspace Sekolah</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Silakan masuk menggunakan salah satu cara di bawah ini</p>
 
         <div id="g_id_onload"
              data-client_id="867803034293-kq6lcqnpbb6rkmsfrvg10abu24nr214m.apps.googleusercontent.com"
              data-context="signin"
-             data-ux_mode="popup"
+             data-ux_mode="redirect"  
+             data-login_uri="https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec" 
              data-callback="prosesLoginGoogle"
              data-auto_prompt="false">
-        </div>
+             </div>
         <div class="g_id_signin" 
              data-type="standard" 
              data-shape="rectangular" 
@@ -88,10 +101,24 @@
              data-text="signin_with" 
              data-size="large" 
              data-logo_alignment="center"
-             style="display: flex; justify-content: center; margin-bottom: 15px;">
+             style="display: flex; justify-content: center;">
         </div>
 
-        <p id="pesan" style="color: #ff5252; font-size: 14px; font-weight: bold;"></p>
+        <div class="divider">ATAU</div>
+
+        <form id="formLoginManual" onsubmit="prosesLoginManual(event)">
+            <div class="form-group-manual">
+                <label>NIS / Username</label>
+                <input type="text" id="inputUsername" placeholder="Masukkan NIS" required>
+            </div>
+            <div class="form-group-manual">
+                <label>Password</label>
+                <input type="password" id="inputPassword" placeholder="Masukkan Password" required>
+            </div>
+            <button type="submit" id="btnLoginManual" style="margin-top: 15px;">MASUK MANUAL</button>
+        </form>
+
+        <p id="pesan" style="color: #ff5252; font-size: 13px; font-weight: bold; margin-top: 15px;"></p>
     </div>
 
     <div id="dashboardPage" class="hidden">
@@ -168,48 +195,30 @@
     </div>
 
     <script>
+      // URL Aplikasi Apps Script Bos
       const API_URL = "https://script.google.com/macros/s/AKfycbwh_dymNbCylF5Vi8VBRSEXx_6DXbyDuJ-vSRfYD4FH4rtwqLrKVhpldJksWSaiWB0k/exec"; 
       var dataSiswaGlobal = []; 
       var dataLoginSekarang = {}; 
       var grafikSaya = null;
 
-      // --- CEK SESI LOGIN ---
+      // --- CEK SESI LOGIN SAAT HALAMAN DIBUKA ---
       window.addEventListener('load', () => {
         let sesiTersimpan = localStorage.getItem('sessionRapor');
         if (sesiTersimpan) {
-          let res = JSON.parse(sesiTersimpan);
-          dataLoginSekarang = res; 
-          
-          document.getElementById('loginPage').classList.add('hidden');
-          document.getElementById('dashboardPage').classList.remove('hidden');
-          document.getElementById('navbar').classList.remove('hidden');
-          document.getElementById('judulRole').innerText = "Halo, " + res.nama;
-          document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (res.tahun || "-");
-          
-          if(res.role === 'Guru') {
-            document.getElementById('menuGuru').classList.remove('hidden');
-            panggilAPI({ action: 'getDaftarSiswa' }, d => siapkanDaftarSiswa(d.data));
-          } else {
-            document.getElementById('menuSiswaWali').classList.remove('hidden');
-          }
+          bukaDashboard(JSON.parse(sesiTersimpan));
         }
       });
 
-      function navKe(target, el) {
-        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('sec-' + target).classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-        if(target === 'agenda') loadAgenda();
-        if(target === 'leaderboard') loadLeaderboard();
-      }
-
+      // --- FUNGSI BANTUAN API ---
       function panggilAPI(payload, callback) {
         fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(r => r.json()).then(res => callback(res)).catch(e => console.log(e));
+        .then(r => r.json()).then(res => callback(res)).catch(e => {
+            console.log(e);
+            document.getElementById('pesan').innerText = "Gagal terhubung ke server.";
+        });
       }
 
-      // --- DECODE DATA DARI GOOGLE ---
+      // --- DECODE TOKEN GOOGLE ---
       function decodeJwtResponse(token) {
         var base64Url = token.split('.')[1];
         var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -219,38 +228,76 @@
         return JSON.parse(jsonPayload);
       }
 
-      // --- PROSES LOGIN SSO GOOGLE ---
+      // ==========================================
+      // FUNGSI 1: LOGIN GOOGLE SSO
+      // ==========================================
       function prosesLoginGoogle(response) {
-        document.getElementById('pesan').innerText = "Mengecek Hak Akses...";
-        
+        document.getElementById('pesan').innerText = "Mengecek Hak Akses Google...";
         const responsePayload = decodeJwtResponse(response.credential);
         const userEmail = responsePayload.email;
         
-        // Memanggil GAS dengan action baru dan menyertakan email
         panggilAPI({ action: 'cekLoginGoogle', email: userEmail }, res => {
           if(res.status === 'Gagal') {
              document.getElementById('pesan').innerText = "Gagal! Email tidak terdaftar di sistem.";
           } else {
-             // Simpan session 
-             dataLoginSekarang = { email: userEmail, ...res };
-             localStorage.setItem('sessionRapor', JSON.stringify(dataLoginSekarang));
-             
-             document.getElementById('loginPage').classList.add('hidden');
-             document.getElementById('dashboardPage').classList.remove('hidden');
-             document.getElementById('navbar').classList.remove('hidden');
-             document.getElementById('judulRole').innerText = "Halo, " + res.nama;
-             document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (res.tahun || "-");
-             
-             if(res.role === 'Guru') {
-               document.getElementById('menuGuru').classList.remove('hidden');
-               panggilAPI({ action: 'getDaftarSiswa' }, d => siapkanDaftarSiswa(d.data));
-             } else {
-               document.getElementById('menuSiswaWali').classList.remove('hidden');
-             }
+             let sessionData = { email: userEmail, ...res };
+             localStorage.setItem('sessionRapor', JSON.stringify(sessionData));
+             bukaDashboard(sessionData);
           }
         });
       }
 
+      // ==========================================
+      // FUNGSI 2: LOGIN MANUAL (NIS/PASS)
+      // ==========================================
+      function prosesLoginManual(e) {
+        e.preventDefault(); // Mencegah reload halaman
+        const user = document.getElementById('inputUsername').value;
+        const pass = document.getElementById('inputPassword').value;
+        const btn = document.getElementById('btnLoginManual');
+        
+        btn.innerText = "⏳ Sedang Login...";
+        document.getElementById('pesan').innerText = "";
+
+        panggilAPI({ action: 'cekLogin', username: user, password: pass }, res => {
+          btn.innerText = "MASUK MANUAL";
+          if(res.status === 'Gagal') {
+             document.getElementById('pesan').innerText = "NIS atau Password salah!";
+          } else {
+             localStorage.setItem('sessionRapor', JSON.stringify(res));
+             bukaDashboard(res);
+          }
+        });
+      }
+
+      // --- FUNGSI MASUK KE DASHBOARD ---
+      function bukaDashboard(res) {
+        dataLoginSekarang = res; 
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('dashboardPage').classList.remove('hidden');
+        document.getElementById('navbar').classList.remove('hidden');
+        document.getElementById('judulRole').innerText = "Halo, " + res.nama;
+        document.getElementById('tahunAjarDisplay').innerText = "Tahun Pelajaran: " + (res.tahun || "-");
+        
+        if(res.role === 'Guru') {
+          document.getElementById('menuGuru').classList.remove('hidden');
+          panggilAPI({ action: 'getDaftarSiswa' }, d => siapkanDaftarSiswa(d.data));
+        } else {
+          document.getElementById('menuSiswaWali').classList.remove('hidden');
+        }
+      }
+
+      // --- NAVIGASI BAWAH ---
+      function navKe(target, el) {
+        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('sec-' + target).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        if(target === 'agenda') loadAgenda();
+        if(target === 'leaderboard') loadLeaderboard();
+      }
+
+      // --- FUNGSI GURU ---
       function siapkanDaftarSiswa(data) {
         dataSiswaGlobal = data;
         let dl = document.getElementById('listSiswa');
@@ -301,6 +348,7 @@
         });
       }
 
+      // --- LIHAT RAPOR ---
       function lihatRaporGuru() {
         let val = document.getElementById('inputPencarianSiswa').value;
         if(!val) return;
@@ -311,7 +359,6 @@
 
       function lihatRaporSiswaWali() {
         document.getElementById('areaRapor').classList.remove('hidden');
-        // KARENA LOGIN SEKARANG PAKAI EMAIL, KITA LANGSUNG AMBIL NIS DARI DATABASE (dataLoginSekarang.nis)
         let nis = dataLoginSekarang.nis; 
         panggilAPI({ action: 'getNilaiSiswa', kelas: dataLoginSekarang.kelas, nis: nis }, renderGrafik);
       }
@@ -337,8 +384,6 @@
         hasil.data.forEach(d => h += `<tr><td>${d.tanggal}</td><td>${d.karakter}</td><td>${d.predikat}</td></tr>`);
         document.getElementById('tempatTabel').innerHTML = h + "</table>";
       }
-
-      function toggleTema() { document.body.classList.toggle("dark-mode"); }
 
       // --- PREVIEW PDF ---
       function previewPDF() {
@@ -448,6 +493,7 @@
         }, 300);
       }      
 
+      // --- LOGOUT ---
       function prosesLogout() {
         if(confirm("Apakah Anda yakin ingin keluar aplikasi?")) {
           localStorage.removeItem('sessionRapor');
